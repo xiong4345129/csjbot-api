@@ -6,10 +6,15 @@ package com.csjbot.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -47,6 +52,21 @@ public class FileZipUtil {
 		}
 	}
 
+	// 配置文件读取权限
+	public static void assignPermission(File file) {
+		Set<PosixFilePermission> perms = new HashSet<>();
+		perms.add(PosixFilePermission.OWNER_READ);
+		perms.add(PosixFilePermission.OWNER_WRITE);
+		perms.add(PosixFilePermission.GROUP_READ);
+		perms.add(PosixFilePermission.OTHERS_READ);
+		perms.add(PosixFilePermission.GROUP_WRITE);
+		try {
+			Files.setPosixFilePermissions(file.toPath(), perms);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * 功能:调用压缩方法，返回压缩信息
 	 * 
@@ -55,24 +75,57 @@ public class FileZipUtil {
 	public static Map<String, String> BackZipInfo(List<String> Fileurls) {
 		List<File> srcfiles = new ArrayList<File>();
 		for (String string : Fileurls) {
-			File file = new File(getPath()+string);
+			File file = new File(string);
 			srcfiles.add(file);
 		}
 		Map<String, String> map = new HashMap<>();
 		String zipName = RandomUtil.generateString(4);
-		String zipUrl = getPath()+"image"+ zipName + ".zip";
+		String zipUrl = "/opt/pkg/zip/" + zipName + ".zip";
+		delAllFile("/opt/pkg/zip"); // 删除所有文件
 		// 压缩后的文件
 		File zipfile = new File(zipUrl);
 		FileZipUtil.zipFiles(srcfiles, zipfile);
-		map.put("zipName", zipName);
-		map.put("zipUrl", zipUrl);
+		assignPermission(zipfile);
+		map.put("zipName", zipName + ".zip");
+		map.put("zipUrl", "120.27.233.57:8001/zip/" + zipName + ".zip");
 		return map;
 	}
-	//获得当前web-inf绝对路径
-	public static String getPath(){
-		String path = FileZipUtil.class.getResource("/").getPath();
-		path = path.substring(1, path.indexOf("classes"));
-		return path;
+
+	/**
+	 * 功能:删除指定文件夹下的所有文件
+	 * 
+	 * @param path:文件夹路径
+	 */
+	public static void delAllFile(String path) {
+		File file = new File(path);
+		String[] tempList = file.list();
+		File temp = null;
+		for (int i = 0; i < tempList.length; i++) {
+			if (path.endsWith(File.separator)) {
+				temp = new File(path + tempList[i]);
+			} else {
+				temp = new File(path + File.separator + tempList[i]);
+			}
+			if (temp.isFile()) {
+				temp.delete();
+			}
+			if (temp.isDirectory()) {
+				delAllFile(path + "/" + tempList[i]);// 先删除文件夹里面的文件
+			}
+		}
+	}
+
+	/**
+	 * 功能:保存文件
+	 * 
+	 * @param path:指定文件夹路径
+	 * @param fileStr:文件加密后的字符串
+	 */
+	public static Map<String, Object> saveFileFromFaceReg(String path, List<String> fileStr) {
+		Map<String, Object> map = new HashMap<>();
+		String fileName = RandomUtil.generateString(4)+RandomUtil.getTimestamp();
+		
+		return map;
 	}
 
 }

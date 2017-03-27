@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.dao.Frs_personDAO">
+	<select id="findPersonByName" resultType="com.csjbot.model.Frs_person">
+		select * from frs_person where name=#{name}
+	</select>
+	<select id="findPersonByperId" resultType="com.csjbot.model.Frs_person">
+		select * from frs_person where person_id=#{person_id}
+	</select>
+	<select id="findPersonByGroupId" resultType="com.csjbot.model.Frs_person">
+		select * from frs_person where group_id=#{group_id}
+	</select>
+	
+</mapper>
