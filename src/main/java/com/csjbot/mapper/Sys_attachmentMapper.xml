@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.dao.Sys_attachmentDAO">
+    <select id="getSystByProId" resultType="com.csjbot.model.Sys_attachment">
+          select * from sys_attachment where transaction_id=#{transaction_id}
+    </select>
+    <select id="getSystByName" resultType="com.csjbot.model.Sys_attachment">
+          select * from sys_attachment where alias_name=#{fileName}
+    </select>
+</mapper>
