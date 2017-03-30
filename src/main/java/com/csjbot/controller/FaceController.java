@@ -41,23 +41,24 @@ public class FaceController {
 	private FaceServiceDAO faceServiceDAO;
 
 	// 添加用户
-	@RequestMapping(value = "addPerson", method = RequestMethod.POST)
+	@RequestMapping(value = "fac/addPerson", method = RequestMethod.POST)
 	@ResponseBody
 	public void addPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
 		
-		Map<String, Object> detMap = faceServiceDAO.faceDet(data.getString("image").toString(), 0);
+		Map<String, Object> detMap = faceServiceDAO.faceDet(data.getString("image").toString(), 1);
+		System.out.println(detMap);
 		String person_id = "per" + RandomUtil.generateString();
 		String age = detMap.get("age").toString();
 		String sex = detMap.get("sex").toString();
 		String beauty = detMap.get("beauty").toString();
 		Frs_person frs_person = new Frs_person(person_id, data.getString("group_id"), data.getString("person_name"), age, sex, beauty);
 
-		ResponseUtil.write(response, faceServiceDAO.addPerson(frs_person, data.get("image").toString()));
+		ResponseUtil.write(response, faceServiceDAO.addPerson(frs_person, data.getString("image")));
 	}
 
 	// 添加人脸
-	@RequestMapping(value = "addFace", method = RequestMethod.POST)
+	@RequestMapping(value = "fac/addFace", method = RequestMethod.POST)
 	@ResponseBody
 	public void addFace(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -71,14 +72,14 @@ public class FaceController {
 	}
 
 	// 获得所有组
-	@RequestMapping(value = "getAllGroup", method = RequestMethod.GET)
+	@RequestMapping(value = "fac/getAllGroup", method = RequestMethod.GET)
 	public void getAllGroup(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
 		ResponseUtil.write(response, faceServiceDAO.findAllGroup());
 	}
 
 	// 删除人脸
-	@RequestMapping(value = "deleteFace", method = RequestMethod.POST)
+	@RequestMapping(value = "fac/deleteFace", method = RequestMethod.POST)
 	@ResponseBody
 	public void deleteFace(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -93,7 +94,7 @@ public class FaceController {
 
 	// 删除person
 	@ResponseBody
-	@RequestMapping(value = "deletePerson", method = RequestMethod.POST)
+	@RequestMapping(value = "fac/deletePerson", method = RequestMethod.POST)
 	public void deletePerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
 		
@@ -101,7 +102,7 @@ public class FaceController {
 	}
 
 	// 查询person信息
-	@RequestMapping(value = "findPerson", method = RequestMethod.POST)
+	@RequestMapping(value = "fac/findPerson", method = RequestMethod.POST)
 	@ResponseBody
 	public void findPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -109,14 +110,14 @@ public class FaceController {
 	}
 
 	// 查询所有person信息
-	@RequestMapping(value = "findAllPerson", method = RequestMethod.POST)
+	@RequestMapping(value = "fac/findAllPerson", method = RequestMethod.POST)
 	public void findAllPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
 		ResponseUtil.write(response, faceServiceDAO.findAllPerson(data.get("group_id").toString()));
 	}
 
 	// 修改person的name
-	@RequestMapping(value = "changePerName", method = RequestMethod.POST)
+	@RequestMapping(value = "fac/changePerName", method = RequestMethod.POST)
 	@ResponseBody
 	public void changePerName(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -126,7 +127,7 @@ public class FaceController {
 	}
 
 	// 人脸检索
-	@RequestMapping(value = "FaceIdentify", method = RequestMethod.POST)
+	@RequestMapping(value = "fac/FaceIdentify", method = RequestMethod.POST)
 	@ResponseBody
 	public void FaceIdentify(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {

@@ -65,14 +65,12 @@ public class FaceServiceDAOImpl implements FaceServiceDAO {
 			group_ids.add(frs_person.getGroup_id().toString());
 			try {
 				json = youtu.NewPerson(image, frs_person.getPerson_id(), group_ids, frs_person.getName());
+				System.out.println(json);
 				if ("OK".equals(json.get("message").toString())) { // 判断返回数据message参数
 					// 图片保存本地，返回图片名和路径
 					JSONObject data = (JSONObject) (json.get("data")); // 将返回数据中的data字符串转换为json对象
 					
-					Map<String, Object> picMap = new HashMap<>();
-					picMap.put("picName", "测试");
-					picMap.put("picUrl", "测试");
-					//FileZipUtil.saveFileFromFaceReg(PATH, image);
+					Map<String, Object> picMap = FileZipUtil.saveFileFromFaceReg(PATH, image);
 					
 					Frs_face frs_face = new Frs_face(data.get("face_id").toString(), data.get("person_id").toString(),
 							frs_person.getGroup_id(), picMap.get("picName").toString(),
@@ -228,14 +226,15 @@ public class FaceServiceDAOImpl implements FaceServiceDAO {
 		Frs_person frs_person = frs_personDAO.findPersonByName(person_name);
 		if (frs_person != null) {
 			Youtu youtu = getYoutu();
-			String[] picName = {};
-			String[] picUrl = {};
+			String[] picName = new String[image.size()];
+			String[] picUrl = new String[image.size()];
+			int i_ = 0;
 			for (String string : image) {
-				int i = 0;
+				
 				Map<String, Object> picMap = FileZipUtil.saveFileFromFaceReg(PATH, string);
-				picName[i] = picMap.get("picName").toString();
-				picUrl[i] = picMap.get("picUrl").toString();
-				i++;
+				picName[i_] = picMap.get("picName").toString();
+				picUrl[i_] = picMap.get("picUrl").toString();
+				i_ ++;
 			}
 			// 图片保存本地并返回图片名称和地址字符串数组
 			try {
@@ -401,6 +400,7 @@ public class FaceServiceDAOImpl implements FaceServiceDAO {
 		if (idenMap.get("name") != null) {
 			result.put("name", idenMap.get("name").toString());
 		}
+		dat.put("result", result);
 		return JsonUtil.toJson(dat);
 	}
 
@@ -417,9 +417,13 @@ public class FaceServiceDAOImpl implements FaceServiceDAO {
 		Youtu youtu = getYoutu();
 		try {
 			JSONObject json = youtu.DetectFace(image, mode);
-			map.put("age", json.get("age"));
-			map.put("sex", json.get("sex"));
-			map.put("beauty", json.get("beauty"));
+			JSONObject data = json.getJSONObject("data");
+			JSONArray face = data.getJSONArray("face");
+			JSONObject mem = face.getJSONObject(0);
+			
+			map.put("age", mem.get("age"));
+			map.put("sex", mem.get("gender"));
+			map.put("beauty", mem.get("beauty"));
 		} catch (KeyManagementException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {
