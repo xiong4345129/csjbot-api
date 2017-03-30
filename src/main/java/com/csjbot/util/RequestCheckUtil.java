@@ -19,4 +19,7 @@ public class RequestCheckUtil {
 		}
 		return flag;
 	}
+/*public static void main(String[] args) {
+	System.out.println(MD5.stringToMD5("ybSD2Dxmhxk3IPCkhKAK"+"20170330104321").toUpperCase());
+}*/
 }

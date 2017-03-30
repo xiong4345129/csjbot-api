@@ -3,6 +3,8 @@
  */
 package com.csjbot.dao;
 
+import java.util.List;
+
 import com.csjbot.model.Sys_attachment;
 
 /**
@@ -12,7 +14,7 @@ import com.csjbot.model.Sys_attachment;
  */
 public interface Sys_attachmentDAO extends BaseDAO<Sys_attachment>{
 	//根据产品id获得文件
-	public abstract Sys_attachment getSystByProId(String transaction_id);
+	public abstract List<Sys_attachment> getSystByProId(String transaction_id);
 	
 	//根据文件名来获得文件
 	public abstract Sys_attachment getSystByName(String fileName);

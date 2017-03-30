@@ -24,7 +24,7 @@ public class Sys_attachment {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String transaction_id;
-	private String transcation_type;
+	private String transaction_type;
 	private String file_type;
 	private String name;
 	private String original_name;
@@ -54,11 +54,11 @@ public class Sys_attachment {
 	public void setTransaction_id(String transaction_id) {
 		this.transaction_id = transaction_id;
 	}
-	public String getTranscation_type() {
-		return transcation_type;
+	public String getTransaction_type() {
+		return transaction_type;
 	}
-	public void setTranscation_type(String transcation_type) {
-		this.transcation_type = transcation_type;
+	public void setTransaction_type(String transaction_type) {
+		this.transaction_type = transaction_type;
 	}
 	public String getFile_type() {
 		return file_type;
@@ -166,13 +166,14 @@ public class Sys_attachment {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	public Sys_attachment(String transaction_id, String transcation_type, String file_type, String name,
+	public Sys_attachment(Integer id, String transaction_id, String transaction_type, String file_type, String name,
 			String original_name, String alias_name, String server_host, String directory, String location, String memo,
 			Integer size, String suffix, String owner_fk, String creator_fk, String updater_fk, Timestamp date_create,
 			Timestamp date_update, Integer is_valid, Integer sort) {
 		super();
+		this.id = id;
 		this.transaction_id = transaction_id;
-		this.transcation_type = transcation_type;
+		this.transaction_type = transaction_type;
 		this.file_type = file_type;
 		this.name = name;
 		this.original_name = original_name;
@@ -193,12 +194,13 @@ public class Sys_attachment {
 	}
 	@Override
 	public String toString() {
-		return "Sys_attachment [id=" + id + ", transaction_id=" + transaction_id + ", transcation_type="
-				+ transcation_type + ", file_type=" + file_type + ", name=" + name + ", original_name=" + original_name
+		return "Sys_attachment [id=" + id + ", transaction_id=" + transaction_id + ", transaction_type="
+				+ transaction_type + ", file_type=" + file_type + ", name=" + name + ", original_name=" + original_name
 				+ ", alias_name=" + alias_name + ", server_host=" + server_host + ", directory=" + directory
 				+ ", location=" + location + ", memo=" + memo + ", size=" + size + ", suffix=" + suffix + ", owner_fk="
 				+ owner_fk + ", creator_fk=" + creator_fk + ", updater_fk=" + updater_fk + ", date_create="
 				+ date_create + ", date_update=" + date_update + ", is_valid=" + is_valid + ", sort=" + sort + "]";
 	}
+	
 	
 }

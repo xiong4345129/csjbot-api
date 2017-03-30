@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.dao.Sms_robotDAO">
+  <select id="findRobotByUid" resultType="com.csjbot.model.Sms_robot">
+		select * from sms_robot where uid=#{uid}
+	</select>
+	<select id="findRobotByAccount" resultType="com.csjbot.model.Sms_robot">
+		select * from sms_robot where master_account=#{masterAccount}
+	</select>
+	<select id="findRobotByStr" resultType="com.csjbot.model.Sms_robot">
+		select * from sms_robot where uid like #{str}
+	</select>
+</mapper>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.dao.Sms_groupDAO">
+	<select id="findGroupByAccount" resultType="com.csjbot.model.Sms_group">
+		select * from sms_group where master_account=#{account}
+	</select>
+	
+	<select id="findGroupByName" resultType="com.csjbot.model.Sms_group">
+		select * from sms_group where name=#{name}
+	</select>
+	
+	<select id="findGroupByNA" resultType="com.csjbot.model.Sms_group">
+		select * from sms_group where master_account=#{account} and name=#{name}
+	</select>
+</mapper>

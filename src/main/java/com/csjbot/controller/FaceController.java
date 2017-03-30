@@ -43,32 +43,31 @@ public class FaceController {
 	// 添加用户
 	@RequestMapping(value = "addPerson", method = RequestMethod.POST)
 	@ResponseBody
-	public void addPerson(@RequestBody String data, HttpServletRequest request, HttpServletResponse response)
+	public void addPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
-		JSONObject json = JSONObject.parseObject(data);
-		Map<String, Object> detMap = faceServiceDAO.faceDet(json.getString("image").toString(), 1);
+		
+		Map<String, Object> detMap = faceServiceDAO.faceDet(data.getString("image").toString(), 0);
 		String person_id = "per" + RandomUtil.generateString();
-		String name = detMap.get("name").toString();
 		String age = detMap.get("age").toString();
 		String sex = detMap.get("sex").toString();
 		String beauty = detMap.get("beauty").toString();
-		Frs_person frs_person = new Frs_person(person_id, json.getString("group_id"), name, age, sex, beauty);
+		Frs_person frs_person = new Frs_person(person_id, data.getString("group_id"), data.getString("person_name"), age, sex, beauty);
 
-		ResponseUtil.write(response, faceServiceDAO.addPerson(frs_person, json.get("image").toString()));
+		ResponseUtil.write(response, faceServiceDAO.addPerson(frs_person, data.get("image").toString()));
 	}
 
 	// 添加人脸
 	@RequestMapping(value = "addFace", method = RequestMethod.POST)
 	@ResponseBody
-	public void addFace(@RequestBody String data, HttpServletRequest request, HttpServletResponse response)
+	public void addFace(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
-		JSONObject json = JSONObject.parseObject(data);
-		JSONArray images = json.getJSONArray("images");
+		
+		JSONArray images = data.getJSONArray("images");
 		List<String> list = new ArrayList<>();
 		for (int i = 0; i < images.size(); i++) {
 			list.add(images.get(i).toString());
 		}
-		ResponseUtil.write(response, faceServiceDAO.addFace(json.getString("person_name"), list));
+		ResponseUtil.write(response, faceServiceDAO.addFace(data.getString("person_name"), list));
 	}
 
 	// 获得所有组
@@ -81,59 +80,58 @@ public class FaceController {
 	// 删除人脸
 	@RequestMapping(value = "deleteFace", method = RequestMethod.POST)
 	@ResponseBody
-	public void deleteFace(@RequestBody String data, HttpServletRequest request, HttpServletResponse response)
+	public void deleteFace(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
-		JSONObject json = JSONObject.parseObject(data);
-		JSONArray images = json.getJSONArray("images");
+		
+		JSONArray images = data.getJSONArray("images");
 		List<String> list = new ArrayList<>();
 		for (int i = 0; i < images.size(); i++) {
 			list.add(images.get(i).toString());
 		}
-		ResponseUtil.write(response, faceServiceDAO.deleteFace(json.getString("person_name"), list));
+		ResponseUtil.write(response, faceServiceDAO.deleteFace(data.getString("person_name"), list));
 	}
 
 	// 删除person
 	@ResponseBody
 	@RequestMapping(value = "deletePerson", method = RequestMethod.POST)
-	public void deletePerson(@RequestBody String data, HttpServletRequest request, HttpServletResponse response)
+	public void deletePerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
-		JSONObject json = JSONObject.parseObject(data);
-		ResponseUtil.write(response, faceServiceDAO.deletePerson(json.get("person_name").toString()));
+		
+		ResponseUtil.write(response, faceServiceDAO.deletePerson(data.get("person_name").toString()));
 	}
 
 	// 查询person信息
 	@RequestMapping(value = "findPerson", method = RequestMethod.POST)
 	@ResponseBody
-	public void findPerson(@RequestBody String data, HttpServletRequest request, HttpServletResponse response)
+	public void findPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
-		JSONObject json = JSONObject.parseObject(data);
-		ResponseUtil.write(response, faceServiceDAO.findPersonByName(json.get("person_name").toString()));
+		ResponseUtil.write(response, faceServiceDAO.findPersonByName(data.get("person_name").toString()));
 	}
 
 	// 查询所有person信息
 	@RequestMapping(value = "findAllPerson", method = RequestMethod.POST)
-	public void findAllPerson(@RequestBody String data, HttpServletRequest request, HttpServletResponse response)
+	public void findAllPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
-		JSONObject json = JSONObject.parseObject(data);
-		ResponseUtil.write(response, faceServiceDAO.findAllPerson(json.get("group_id").toString()));
+		ResponseUtil.write(response, faceServiceDAO.findAllPerson(data.get("group_id").toString()));
 	}
 
 	// 修改person的name
 	@RequestMapping(value = "changePerName", method = RequestMethod.POST)
 	@ResponseBody
-	public void changePerName(@RequestBody String data, HttpServletRequest request, HttpServletResponse response)
+	public void changePerName(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
-		JSONObject json = JSONObject.parseObject(data);
-		ResponseUtil.write(response, faceServiceDAO.updatePersonName(json.get("person_name").toString(),json.get("new_name").toString()));
+		
+		ResponseUtil.write(response,
+				faceServiceDAO.updatePersonName(data.get("person_name").toString(), data.get("new_name").toString()));
 	}
 
 	// 人脸检索
 	@RequestMapping(value = "FaceIdentify", method = RequestMethod.POST)
 	@ResponseBody
-	public void FaceIdentify(@RequestBody String data, HttpServletRequest request, HttpServletResponse response)
+	public void FaceIdentify(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
-		JSONObject json = JSONObject.parseObject(data);
-		ResponseUtil.write(response, faceServiceDAO.faceDect(json.get("image").toString(), json.get("group_id").toString(), 1));
+		ResponseUtil.write(response,
+				faceServiceDAO.faceDect(data.get("image").toString(), data.get("group_id").toString(), 1));
 	}
 
 	/**
@@ -153,4 +151,5 @@ public class FaceController {
 		}
 		return str.toString();
 	}
+
 }

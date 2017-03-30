@@ -21,6 +21,7 @@ import com.csjbot.dao.Frs_faceDAO;
 import com.csjbot.dao.Frs_personDAO;
 import com.csjbot.model.Frs_face;
 import com.csjbot.model.Frs_person;
+import com.csjbot.util.FileZipUtil;
 import com.csjbot.util.JsonUtil;
 import com.csjbot.youtu.Youtu;
 
@@ -36,6 +37,7 @@ public class FaceServiceDAOImpl implements FaceServiceDAO {
 	private static final String SECRET_KEY = "PhtthIhuuiMqBxGRQCl7KL9k8KQhrHWZ";
 	private static final String USER_ID = "0";
 	private static final String BUCKET = "csjrobot";
+	private static final String PATH = "/opt/pkg/zip/";
 
 	@Autowired
 	private Frs_personDAO frs_personDAO;
@@ -66,7 +68,12 @@ public class FaceServiceDAOImpl implements FaceServiceDAO {
 				if ("OK".equals(json.get("message").toString())) { // 判断返回数据message参数
 					// 图片保存本地，返回图片名和路径
 					JSONObject data = (JSONObject) (json.get("data")); // 将返回数据中的data字符串转换为json对象
-					Map<String, String> picMap = new HashMap<>();
+					
+					Map<String, Object> picMap = new HashMap<>();
+					picMap.put("picName", "测试");
+					picMap.put("picUrl", "测试");
+					//FileZipUtil.saveFileFromFaceReg(PATH, image);
+					
 					Frs_face frs_face = new Frs_face(data.get("face_id").toString(), data.get("person_id").toString(),
 							frs_person.getGroup_id(), picMap.get("picName").toString(),
 							picMap.get("picUrl").toString());
@@ -221,10 +228,16 @@ public class FaceServiceDAOImpl implements FaceServiceDAO {
 		Frs_person frs_person = frs_personDAO.findPersonByName(person_name);
 		if (frs_person != null) {
 			Youtu youtu = getYoutu();
+			String[] picName = {};
+			String[] picUrl = {};
+			for (String string : image) {
+				int i = 0;
+				Map<String, Object> picMap = FileZipUtil.saveFileFromFaceReg(PATH, string);
+				picName[i] = picMap.get("picName").toString();
+				picUrl[i] = picMap.get("picUrl").toString();
+				i++;
+			}
 			// 图片保存本地并返回图片名称和地址字符串数组
-			Map<String, Object> picMap = new HashMap<>();
-			String[] picName = (String[]) picMap.get("picName");
-			String[] picUrl = (String[]) picMap.get("picUrl");
 			try {
 				json = youtu.AddFace(frs_person.getPerson_id().toString(), image);
 				if ("OK".equals(json.get("message").toString())) { // 优图添加成功，进行数据操作

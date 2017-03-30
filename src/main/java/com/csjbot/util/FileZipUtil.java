@@ -1,11 +1,10 @@
-/**
- * 
- */
+
 package com.csjbot.util;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
@@ -121,11 +120,43 @@ public class FileZipUtil {
 	 * @param path:指定文件夹路径
 	 * @param fileStr:文件加密后的字符串
 	 */
-	public static Map<String, Object> saveFileFromFaceReg(String path, List<String> fileStr) {
+	public static Map<String, Object> saveFileFromFaceReg(String path, String fileStr) {
 		Map<String, Object> map = new HashMap<>();
-		String fileName = RandomUtil.generateString(4)+RandomUtil.getTimestamp();
-		
+		String fileName = RandomUtil.generateString(4) + RandomUtil.getTimestamp() + ".txt";
+		File fileText = new File(path + fileName);
+		// 向文件写入对象写入信息
+		FileWriter fileWriter;
+		try {
+			fileWriter = new FileWriter(fileText);
+			// 写文件
+			fileWriter.write(fileStr);
+			// 关闭
+			fileWriter.close();
+			map.put("picName", fileName);
+			map.put("picUrl", path + fileName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return map;
 	}
 
+	/**
+	 * 功能：删除文件
+	 * 
+	 * @param path：指定文件路径（包含文件名）
+	 */
+	public static boolean deleteFile(String path) {
+		boolean flag = false;
+		return flag;
+	}
+
+	/**
+	 * 功能：读取文件
+	 * 
+	 * @param path：文件路径（包含文件名）
+	 */
+	public static String readFile(String path) {
+		String fileData = "";
+		return fileData;
+	}
 }

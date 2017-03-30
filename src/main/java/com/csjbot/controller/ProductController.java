@@ -29,20 +29,19 @@ public class ProductController {
 	// 登录
 	@RequestMapping(value = "login", method = RequestMethod.POST)
 	@ResponseBody
-	public void login(@RequestBody String data, HttpServletResponse response) {
-		JSONObject jsonObject = (JSONObject) JSONObject.toJSON(data);
-		ResponseUtil.write(response,productServiceDAO.login(jsonObject.getString("account"), jsonObject.getString("password")));
+	public void login(@RequestBody JSONObject data, HttpServletResponse response) {
+		ResponseUtil.write(response, productServiceDAO.login(data.getString("account"), data.getString("password")));
 	}
 
 	// 获得产品信息
 	@RequestMapping(value = "getRobotProductInfo", method = RequestMethod.GET)
 	@ResponseBody
 	public void getRobotProductInfo(HttpServletRequest request, HttpServletResponse response) {
-		//if (judgeHead(request)) {
+		if (judgeHead(request)) {
 			ResponseUtil.write(response, productServiceDAO.getProductInfo());
-		//} else {
-			//ResponseUtil.backErrorInfo(response, "请求授权失败！");
-	//	}
+		} else {
+			ResponseUtil.backErrorInfo(response, "请求授权失败！");
+		}
 
 	}
 
@@ -61,17 +60,16 @@ public class ProductController {
 	// 文件下载
 	@RequestMapping(value = "downFile", method = RequestMethod.POST)
 	@ResponseBody
-	public void downFile(@RequestBody String data, HttpServletRequest request, HttpServletResponse response) {
-		//if (judgeHead(request)) {
-			JSONObject jsonObject = (JSONObject) JSONObject.toJSON(data);
-			ResponseUtil.write(response, productServiceDAO.downFile(jsonObject.getString("fileName")));
-		//} else {
-			//ResponseUtil.backErrorInfo(response, "请求授权失败！");
-		//}
+	public void downFile(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response) {
+		if (judgeHead(request)) {
+			ResponseUtil.write(response, productServiceDAO.downFile(data.getString("fileName")));
+		} else {
+			ResponseUtil.backErrorInfo(response, "请求授权失败！");
+		}
 	}
 
 	// 验证http 头内容
-	public boolean judgeHead(HttpServletRequest request){
+	public boolean judgeHead(HttpServletRequest request) {
 		String key = request.getHeader("key").toString();
 		String time = request.getHeader("time").toString();
 		String sign = request.getHeader("sign").toString();

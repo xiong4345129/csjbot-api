@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.dao.Sms_adminDAO">
+	<select id="findAdminByUid" resultType="com.csjbot.model.Sms_admin">
+		select * from sms_admin where uid =#{uid}
+	</select>
+	<select id="findAdminByAccount" resultType="com.csjbot.model.Sms_admin">
+		select * from sms_admin where account=#{account}
+	</select>
+</mapper>

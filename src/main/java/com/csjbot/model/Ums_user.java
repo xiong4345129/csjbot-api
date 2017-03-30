@@ -21,7 +21,7 @@ public class Ums_user {
 	@Id
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private String id;
 	private String username;
 	private String password;
 	private String salt;
@@ -40,10 +40,11 @@ public class Ums_user {
 	private Timestamp date_update;
 	private String creator_fk;
 	private String updater_fk;
-	public Integer getId() {
+	
+	public String getId() {
 		return id;
 	}
-	public void setId(Integer id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	public String getUsername() {
@@ -158,11 +159,12 @@ public class Ums_user {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	public Ums_user(String username, String password, String salt, String phone, String email, String realName,
-			Integer sex, String idCard, Integer is_super_admin, Integer password_changed, Timestamp last_login_time,
-			Integer status, Timestamp date_effect, Timestamp date_expire, Timestamp date_create, Timestamp date_update,
-			String creator_fk, String updater_fk) {
+	public Ums_user(String id, String username, String password, String salt, String phone, String email,
+			String realName, Integer sex, String idCard, Integer is_super_admin, Integer password_changed,
+			Timestamp last_login_time, Integer status, Timestamp date_effect, Timestamp date_expire,
+			Timestamp date_create, Timestamp date_update, String creator_fk, String updater_fk) {
 		super();
+		this.id = id;
 		this.username = username;
 		this.password = password;
 		this.salt = salt;

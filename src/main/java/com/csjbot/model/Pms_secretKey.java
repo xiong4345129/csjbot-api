@@ -20,7 +20,7 @@ public class Pms_secretKey {
 	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private String key;
+	private String key_;
 	private String secret;
 	private String user_id;
 	public Integer getId() {
@@ -30,10 +30,10 @@ public class Pms_secretKey {
 		this.id = id;
 	}
 	public String getKey() {
-		return key;
+		return key_;
 	}
 	public void setKey(String key) {
-		this.key = key;
+		this.key_ = key;
 	}
 	public String getSecret() {
 		return secret;
@@ -53,13 +53,13 @@ public class Pms_secretKey {
 	}
 	public Pms_secretKey(String key, String secret, String user_id) {
 		super();
-		this.key = key;
+		this.key_ = key;
 		this.secret = secret;
 		this.user_id = user_id;
 	}
 	@Override
 	public String toString() {
-		return "Pms_secretKey [id=" + id + ", key=" + key + ", secret=" + secret + ", user_id=" + user_id + "]";
+		return "Pms_secretKey [id=" + id + ", key=" + key_ + ", secret=" + secret + ", user_id=" + user_id + "]";
 	}
 	
 	

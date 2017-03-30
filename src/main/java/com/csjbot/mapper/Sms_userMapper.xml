@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.dao.Sms_userDAO">
+  <select id="findUserByAccount" resultType="com.csjbot.model.Sms_user">
+		select * from sms_user where account=#{account}
+	</select>
+	<select id="findUserByStr" resultType="com.csjbot.model.Sms_user">
+		select * from sms_user where account like #{str}
+	</select>
+</mapper>
