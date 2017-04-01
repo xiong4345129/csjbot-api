@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.pay.service.OrderPayDBService">
+
+    <resultMap id="accountMap" type="java.util.HashMap">
+        <result column="code_orig" property="key"/>
+        <result column="value" property="value"/>
+    </resultMap>
+
+    <select id="getAccount" resultType="hashmap">
+        select code_orig code, value from cms_secret;
+    </select>
+
+    <insert id="newOrder" parameterType="com.csjbot.pay.model.PmsOrderPay">
+        <selectKey keyProperty="orderId" order="AFTER" resultType="java.lang.String">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into pms_order_pay
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            order_id,
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="orderTime != null">
+                order_time,
+            </if>
+            <if test="orderStatus != null">
+                order_status,
+            </if>
+            <if test="orderTotalFee != null">
+                order_total_fee,
+            </if>
+            <if test="payMethod != null">
+                pay_method,
+            </if>
+            <if test="payUrl != null">
+                pay_url,
+            </if>
+            <if test="payProductId!= null">
+                pay_product_id,
+            </if>
+            <if test="payStatus != null">
+                pay_status,
+            </if>
+            <if test="robotUid != null">
+                robot_uid,
+            </if>
+            <if test="robotModel != null">
+                robot_model,
+            </if>
+            <if test="orderRequest != null">
+                order_request,
+            </if>
+            <if test="payRequest != null">
+                pay_request,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{orderId,jdbcType=VARCHAR},
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="orderTime != null">
+                #{orderTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="orderStatus != null">
+                #{orderStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="orderTotalFee != null">
+                #{orderTotalFee,jdbcType=INTEGER},
+            </if>
+            <if test="payMethod != null">
+                #{payMethod,jdbcType=VARCHAR},
+            </if>
+            <if test="payUrl != null">
+                #{payUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="payStatus != null">
+                #{payStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="robotUid != null">
+                #{robotUid,jdbcType=VARCHAR},
+            </if>
+            <if test="robotModel != null">
+                #{robotModel,jdbcType=VARCHAR},
+            </if>
+            <if test="orderRequest != null">
+                #{orderRequest,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="payRequest != null">
+                #{payRequest,jdbcType=LONGVARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrderList" parameterType="java.util.List">
+        INSERT INTO pms_order_detail( order_id, item_id, item_amount) VALUES
+        <foreach collection="list" item="element" index="index" open="(" separator="),(" close=")">
+            #{element.orderId}, #{element.itemId}, #{element.itemAmount}
+        </foreach>
+    </insert>
+
+    <select id="getUnitPrice" resultType="java.lang.Integer" parameterType="string">
+        select round(price*100) up
+        from pms_product
+        where id=#{id};
+    </select>
+
+    <!--<update id="updateUnitPrice" parameterType="string">-->
+    <!--update pms_order_detail t-->
+    <!--inner join pms_product s-->
+    <!--on t.item_id = s.id-->
+    <!--set t.unit_price=s.price-->
+    <!--where t.order_id=#{orderId};-->
+    <!--</update>-->
+
+    <!--<select id="calculcateTotalFee" resultType="java.lang.Integer" parameterType="string">-->
+    <!--select round(sum(item_qty*unit_price*100)) total_fee-->
+    <!--from pms_order_detail where order_id = #{orderId};-->
+    <!--</select>-->
+</mapper>

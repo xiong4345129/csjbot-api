@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.pay.dao.PmsOrderPayMapper">
+  <resultMap id="BaseResultMap" type="com.csjbot.pay.model.PmsOrderPay">
+    <id column="order_id" jdbcType="VARCHAR" property="orderId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="order_time" jdbcType="TIMESTAMP" property="orderTime" />
+    <result column="order_status" jdbcType="VARCHAR" property="orderStatus" />
+    <result column="order_total_fee" jdbcType="INTEGER" property="orderTotalFee" />
+    <result column="pay_method" jdbcType="VARCHAR" property="payMethod" />
+    <result column="pay_url" jdbcType="VARCHAR" property="payUrl" />
+    <result column="pay_status" jdbcType="VARCHAR" property="payStatus" />
+    <result column="robot_uid" jdbcType="VARCHAR" property="robotUid" />
+    <result column="robot_model" jdbcType="VARCHAR" property="robotModel" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.csjbot.pay.model.PmsOrderPayWithBLOBs">
+    <result column="order_request" jdbcType="LONGVARCHAR" property="orderRequest" />
+    <result column="pay_request" jdbcType="LONGVARCHAR" property="payRequest" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    order_id, create_time, update_time, order_time, order_status, order_total_fee, pay_method, 
+    pay_url, pay_status, robot_uid, robot_model
+  </sql>
+  <sql id="Blob_Column_List">
+    order_request, pay_request
+  </sql>
+  <select id="selectByExampleWithBLOBs" parameterType="com.csjbot.pay.model.PmsOrderPayExample" resultMap="ResultMapWithBLOBs">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from pms_order_pay
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByExample" parameterType="com.csjbot.pay.model.PmsOrderPayExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from pms_order_pay
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="limit != null">
+      <if test="offset != null">
+        limit ${offset}, ${limit}
+      </if>
+      <if test="offset == null">
+        limit ${limit}
+      </if>
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from pms_order_pay
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from pms_order_pay
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.csjbot.pay.model.PmsOrderPayExample">
+    delete from pms_order_pay
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.csjbot.pay.model.PmsOrderPayWithBLOBs">
+    <selectKey keyProperty="orderId" order="AFTER" resultType="java.lang.String">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into pms_order_pay (create_time, update_time, order_time, 
+      order_status, order_total_fee, pay_method, 
+      pay_url, pay_status, robot_uid, 
+      robot_model, order_request, pay_request
+      )
+    values (#{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{orderTime,jdbcType=TIMESTAMP}, 
+      #{orderStatus,jdbcType=VARCHAR}, #{orderTotalFee,jdbcType=INTEGER}, #{payMethod,jdbcType=VARCHAR}, 
+      #{payUrl,jdbcType=VARCHAR}, #{payStatus,jdbcType=VARCHAR}, #{robotUid,jdbcType=VARCHAR}, 
+      #{robotModel,jdbcType=VARCHAR}, #{orderRequest,jdbcType=LONGVARCHAR}, #{payRequest,jdbcType=LONGVARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.csjbot.pay.model.PmsOrderPayWithBLOBs">
+    <selectKey keyProperty="orderId" order="AFTER" resultType="java.lang.String">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into pms_order_pay
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="orderTime != null">
+        order_time,
+      </if>
+      <if test="orderStatus != null">
+        order_status,
+      </if>
+      <if test="orderTotalFee != null">
+        order_total_fee,
+      </if>
+      <if test="payMethod != null">
+        pay_method,
+      </if>
+      <if test="payUrl != null">
+        pay_url,
+      </if>
+      <if test="payStatus != null">
+        pay_status,
+      </if>
+      <if test="robotUid != null">
+        robot_uid,
+      </if>
+      <if test="robotModel != null">
+        robot_model,
+      </if>
+      <if test="orderRequest != null">
+        order_request,
+      </if>
+      <if test="payRequest != null">
+        pay_request,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderTime != null">
+        #{orderTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderStatus != null">
+        #{orderStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="orderTotalFee != null">
+        #{orderTotalFee,jdbcType=INTEGER},
+      </if>
+      <if test="payMethod != null">
+        #{payMethod,jdbcType=VARCHAR},
+      </if>
+      <if test="payUrl != null">
+        #{payUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="payStatus != null">
+        #{payStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="robotUid != null">
+        #{robotUid,jdbcType=VARCHAR},
+      </if>
+      <if test="robotModel != null">
+        #{robotModel,jdbcType=VARCHAR},
+      </if>
+      <if test="orderRequest != null">
+        #{orderRequest,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="payRequest != null">
+        #{payRequest,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.csjbot.pay.model.PmsOrderPayExample" resultType="java.lang.Long">
+    select count(*) from pms_order_pay
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update pms_order_pay
+    <set>
+      <if test="record.orderId != null">
+        order_id = #{record.orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.createTime != null">
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.updateTime != null">
+        update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.orderTime != null">
+        order_time = #{record.orderTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.orderStatus != null">
+        order_status = #{record.orderStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderTotalFee != null">
+        order_total_fee = #{record.orderTotalFee,jdbcType=INTEGER},
+      </if>
+      <if test="record.payMethod != null">
+        pay_method = #{record.payMethod,jdbcType=VARCHAR},
+      </if>
+      <if test="record.payUrl != null">
+        pay_url = #{record.payUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="record.payStatus != null">
+        pay_status = #{record.payStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="record.robotUid != null">
+        robot_uid = #{record.robotUid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.robotModel != null">
+        robot_model = #{record.robotModel,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderRequest != null">
+        order_request = #{record.orderRequest,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="record.payRequest != null">
+        pay_request = #{record.payRequest,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExampleWithBLOBs" parameterType="map">
+    update pms_order_pay
+    set order_id = #{record.orderId,jdbcType=VARCHAR},
+      create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+      order_time = #{record.orderTime,jdbcType=TIMESTAMP},
+      order_status = #{record.orderStatus,jdbcType=VARCHAR},
+      order_total_fee = #{record.orderTotalFee,jdbcType=INTEGER},
+      pay_method = #{record.payMethod,jdbcType=VARCHAR},
+      pay_url = #{record.payUrl,jdbcType=VARCHAR},
+      pay_status = #{record.payStatus,jdbcType=VARCHAR},
+      robot_uid = #{record.robotUid,jdbcType=VARCHAR},
+      robot_model = #{record.robotModel,jdbcType=VARCHAR},
+      order_request = #{record.orderRequest,jdbcType=LONGVARCHAR},
+      pay_request = #{record.payRequest,jdbcType=LONGVARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update pms_order_pay
+    set order_id = #{record.orderId,jdbcType=VARCHAR},
+      create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+      order_time = #{record.orderTime,jdbcType=TIMESTAMP},
+      order_status = #{record.orderStatus,jdbcType=VARCHAR},
+      order_total_fee = #{record.orderTotalFee,jdbcType=INTEGER},
+      pay_method = #{record.payMethod,jdbcType=VARCHAR},
+      pay_url = #{record.payUrl,jdbcType=VARCHAR},
+      pay_status = #{record.payStatus,jdbcType=VARCHAR},
+      robot_uid = #{record.robotUid,jdbcType=VARCHAR},
+      robot_model = #{record.robotModel,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.csjbot.pay.model.PmsOrderPayWithBLOBs">
+    update pms_order_pay
+    <set>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderTime != null">
+        order_time = #{orderTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderStatus != null">
+        order_status = #{orderStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="orderTotalFee != null">
+        order_total_fee = #{orderTotalFee,jdbcType=INTEGER},
+      </if>
+      <if test="payMethod != null">
+        pay_method = #{payMethod,jdbcType=VARCHAR},
+      </if>
+      <if test="payUrl != null">
+        pay_url = #{payUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="payStatus != null">
+        pay_status = #{payStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="robotUid != null">
+        robot_uid = #{robotUid,jdbcType=VARCHAR},
+      </if>
+      <if test="robotModel != null">
+        robot_model = #{robotModel,jdbcType=VARCHAR},
+      </if>
+      <if test="orderRequest != null">
+        order_request = #{orderRequest,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="payRequest != null">
+        pay_request = #{payRequest,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.csjbot.pay.model.PmsOrderPayWithBLOBs">
+    update pms_order_pay
+    set create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      order_time = #{orderTime,jdbcType=TIMESTAMP},
+      order_status = #{orderStatus,jdbcType=VARCHAR},
+      order_total_fee = #{orderTotalFee,jdbcType=INTEGER},
+      pay_method = #{payMethod,jdbcType=VARCHAR},
+      pay_url = #{payUrl,jdbcType=VARCHAR},
+      pay_status = #{payStatus,jdbcType=VARCHAR},
+      robot_uid = #{robotUid,jdbcType=VARCHAR},
+      robot_model = #{robotModel,jdbcType=VARCHAR},
+      order_request = #{orderRequest,jdbcType=LONGVARCHAR},
+      pay_request = #{payRequest,jdbcType=LONGVARCHAR}
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.csjbot.pay.model.PmsOrderPay">
+    update pms_order_pay
+    set create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      order_time = #{orderTime,jdbcType=TIMESTAMP},
+      order_status = #{orderStatus,jdbcType=VARCHAR},
+      order_total_fee = #{orderTotalFee,jdbcType=INTEGER},
+      pay_method = #{payMethod,jdbcType=VARCHAR},
+      pay_url = #{payUrl,jdbcType=VARCHAR},
+      pay_status = #{payStatus,jdbcType=VARCHAR},
+      robot_uid = #{robotUid,jdbcType=VARCHAR},
+      robot_model = #{robotModel,jdbcType=VARCHAR}
+    where order_id = #{orderId,jdbcType=VARCHAR}
+  </update>
+</mapper>

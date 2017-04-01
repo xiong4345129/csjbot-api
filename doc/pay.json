@@ -1,0 +1,26 @@
+{
+  "id": "1490854436923-ROBOabcdefg-jl3HDd",
+  "data": {
+    "orderPseudoNo": "201703291745-12",
+    "orderTime": "2017-02-24T10:51:41",
+    "orderDesc":"周黑鸭张浦店-食品",
+    "orderList": [
+      {
+        "objectId": "ZHY00001",
+        "qty": 3,
+        "state": "REGULAR"
+      },
+      {
+        "objectId": "ZHY00007",
+        "qty": 1,
+        "state": "REGULAR"
+      }
+    ],
+    "robotUid": "ROBOabcdefg",
+    "robotModel": "yingbin",
+    "venderCode": "ZHY",
+    "venderUser": "12345678901"
+  }
+}
+
+
