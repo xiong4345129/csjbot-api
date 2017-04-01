@@ -1,5 +1,7 @@
 package com.csjbot.pay.model;
 
+import com.csjbot.pay.controller.OrderStatus;
+
 public class WxClientOrderResponse {
     private String id;
 
@@ -7,13 +9,13 @@ public class WxClientOrderResponse {
     private Data data;
     private Error error;
 
-    public WxClientOrderResponse(String status, Data data) {
-        this.status = status;
+    public WxClientOrderResponse(OrderStatus status, Data data) {
+        this.status = status.name();
         this.data = data;
     }
 
-    public WxClientOrderResponse(String status, Error error) {
-        this.status = status;
+    public WxClientOrderResponse(OrderStatus status, Error error) {
+        this.status = status.name();
         this.error = error;
     }
 

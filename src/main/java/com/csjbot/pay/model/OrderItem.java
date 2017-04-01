@@ -2,7 +2,7 @@ package com.csjbot.pay.model;
 
 public class OrderItem {
     private String objectId;
-    private Integer amount;
+    private Integer qty;
     private String state;
 
     public String getObjectId() {
@@ -10,7 +10,7 @@ public class OrderItem {
     }
 
     public Integer getQty() {
-        return amount;
+        return qty;
     }
 
     public String getState() {

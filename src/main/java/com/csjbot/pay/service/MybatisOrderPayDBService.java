@@ -33,7 +33,12 @@ public class MybatisOrderPayDBService implements OrderPayDBService {
 
     @Override
     public int newOrder(PmsOrderPay orderPay) {
-        return sqlSession.insert(getStatement("newOrder"));
+        return sqlSession.insert(getStatement("newOrder"), orderPay);
+    }
+
+    @Override
+    public int updateOrder(PmsOrderPay orderPay) {
+        return sqlSession.update(getStatement("updateOrder"), orderPay);
     }
 
     @Override
@@ -43,7 +48,12 @@ public class MybatisOrderPayDBService implements OrderPayDBService {
 
     @Override
     public Integer getUnitPrice(String itemId) {
-        return null;
+        return sqlSession.selectOne(getStatement("getUnitPrice"), itemId);
+    }
+
+    @Override
+    public String getOrderStatus(String orderId) {
+        return sqlSession.selectOne(getStatement("getOrderStatus"),orderId);
     }
 
     // @Override

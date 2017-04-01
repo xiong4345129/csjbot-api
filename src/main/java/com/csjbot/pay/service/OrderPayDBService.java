@@ -11,10 +11,13 @@ public interface OrderPayDBService {
 
     int newOrder(PmsOrderPay orderPay);
 
+    int updateOrder(PmsOrderPay orderPay);
+
     int insertOrderList(List<PmsOrderDetail> items);
 
     Integer getUnitPrice(String itemId);
 
+    String getOrderStatus(String orderId);
     // int updateUnitPrice(String orderId);
     //
     // Integer calculcateTotalFee(String orderId);

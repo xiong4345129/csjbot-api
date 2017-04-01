@@ -5,7 +5,7 @@
     <artifactId>api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <!--<modules>-->
-        <!--<module>payment</module>-->
+    <!--<module>payment</module>-->
     <!--</modules>-->
     <packaging>war</packaging>
     <properties>
@@ -260,6 +260,22 @@
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-typehandlers-jsr310</artifactId>
             <version>1.0.2</version>
+        </dependency>
+
+        <!--本地依赖-->
+        <dependency>
+            <groupId>youtu</groupId>
+            <artifactId>youtu</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/webapp/WEB-INF/lib/youtu-java-sdk.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>json</groupId>
+            <artifactId>json</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/webapp/WEB-INF/lib/json.jar</systemPath>
         </dependency>
 
     </dependencies>

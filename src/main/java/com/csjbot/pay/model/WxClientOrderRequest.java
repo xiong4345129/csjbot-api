@@ -23,7 +23,7 @@ public class WxClientOrderRequest {
 
         private String robotUid;
         private String robotModel;
-        private String venderId;
+        private String venderCode;
         private String venderUser;
 
         public String getOrderPseudoNo() {
@@ -48,8 +48,8 @@ public class WxClientOrderRequest {
             return robotModel;
         }
 
-        public String getVenderId() {
-            return venderId;
+        public String getVenderCode() {
+            return venderCode;
         }
 
         public String getVenderUser() {
@@ -79,7 +79,7 @@ public class WxClientOrderRequest {
     //             "    ],\n" +
     //             "    \"robotUid\": \"ROBOabcdefg\",\n" +
     //             "    \"robotModel\": \"yingbin\",\n" +
-    //             "    \"venderId\": \"ZHY\",\n" +
+    //             "    \"venderCode\": \"ZHY\",\n" +
     //             "    \"venderUser\": \"12345678901\"\n" +
     //             "  }\n" +
     //             "}";

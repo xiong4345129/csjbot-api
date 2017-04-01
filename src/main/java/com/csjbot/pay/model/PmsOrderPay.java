@@ -1,42 +1,44 @@
 package com.csjbot.pay.model;
 
 import com.csjbot.pay.controller.OrderStatus;
+import com.csjbot.pay.controller.PayServiceProvider;
 import com.csjbot.pay.controller.PayStatus;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author
  */
 public class PmsOrderPay implements Serializable {
-    private String orderId;
 
     private Date createTime;
-
     private Date updateTime;
 
+    private String orderId;
     private Date orderTime;
-
-    private String orderPsuedoNo;
-
-    private String orderStatus;
-
+    private String orderPseudoNo;
     private Integer orderTotalFee;
+    private String orderStatus;
+    private String orderErrCode;
+    private String orderErrDesc;
 
+    private String payService;
     private String payMethod;
-
-    private String payUrl;
-
+    private String payCodeUrl;
     private String payProductId;
-
     private String payStatus;
+    private String payErrCode;
+    private String payErrDesc;
+
+    private String prePayId;
 
     private String robotUid;
-
     private String robotModel;
+
+    private String orderRequest;
+    private String payRequest;
 
     private static final long serialVersionUID = 1L;
 
@@ -48,25 +50,13 @@ public class PmsOrderPay implements Serializable {
         return orderId;
     }
 
-    // public void setOrderId(String orderId) {
-    //     this.orderId = orderId;
-    // }
-
     public Date getCreateTime() {
         return createTime;
     }
 
-    // public void setCreateTime(Date createTime) {
-    //     this.createTime = createTime;
-    // }
-
     public Date getUpdateTime() {
         return updateTime;
     }
-
-    // public void setUpdateTime(Date updateTime) {
-    //     this.updateTime = updateTime;
-    // }
 
     public Date getOrderTime() {
         return orderTime;
@@ -76,18 +66,12 @@ public class PmsOrderPay implements Serializable {
         this.orderTime = orderTime;
     }
 
-
-
-    public String getOrderStatus() {
-        return orderStatus;
+    public String getOrderPseudoNo() {
+        return orderPseudoNo;
     }
 
-    public void setOrderStatus(String orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-
-    public void setOrderStatus(OrderStatus status) {
-        this.orderStatus = status.name();
+    public void setOrderPseudoNo(String orderPseudoNo) {
+        this.orderPseudoNo = orderPseudoNo;
     }
 
     public Integer getOrderTotalFee() {
@@ -98,6 +82,46 @@ public class PmsOrderPay implements Serializable {
         this.orderTotalFee = orderTotalFee;
     }
 
+    public String getOrderStatus() {
+        return orderStatus;
+    }
+
+    // public void setOrderStatus(String orderStatus) {
+    //     this.orderStatus = orderStatus;
+    // }
+
+    public void setOrderStatus(OrderStatus status) {
+        this.orderStatus = status.name();
+    }
+
+    public String getOrderErrCode() {
+        return orderErrCode;
+    }
+
+    public void setOrderErrCode(String orderErrCode) {
+        this.orderErrCode = orderErrCode;
+    }
+
+    public String getOrderErrDesc() {
+        return orderErrDesc;
+    }
+
+    public void setOrderErrDesc(String orderErrDesc) {
+        this.orderErrDesc = orderErrDesc;
+    }
+
+    public String getPayService() {
+        return payService;
+    }
+
+    public void setPayService(PayServiceProvider sp) {
+        this.payService = sp.name();
+    }
+
+    // public void setPayService(String payService) {
+    //     this.payService = payService;
+    // }
+
     public String getPayMethod() {
         return payMethod;
     }
@@ -106,12 +130,12 @@ public class PmsOrderPay implements Serializable {
         this.payMethod = payMethod;
     }
 
-    public String getPayUrl() {
-        return payUrl;
+    public String getPayCodeUrl() {
+        return payCodeUrl;
     }
 
-    public void setPayUrl(String payUrl) {
-        this.payUrl = payUrl;
+    public void setPayCodeUrl(String payCodeUrl) {
+        this.payCodeUrl = payCodeUrl;
     }
 
     public String getPayProductId() {
@@ -122,6 +146,13 @@ public class PmsOrderPay implements Serializable {
         this.payProductId = payProductId;
     }
 
+    public String getPrePayId() {
+        return prePayId;
+    }
+
+    public void setPrePayId(String prePayId) {
+        this.prePayId = prePayId;
+    }
 
     public String getPayStatus() {
         return payStatus;
@@ -131,8 +162,25 @@ public class PmsOrderPay implements Serializable {
         this.payStatus = status.name();
     }
 
-    public void setPayStatus(String payStatus) {
-        this.payStatus = payStatus;
+    // public void setPayStatus(String payStatus) {
+    //     this.payStatus = payStatus;
+    // }
+
+
+    public String getPayErrCode() {
+        return payErrCode;
+    }
+
+    public void setPayErrCode(String payErrCode) {
+        this.payErrCode = payErrCode;
+    }
+
+    public String getPayErrDesc() {
+        return payErrDesc;
+    }
+
+    public void setPayErrDesc(String payErrDesc) {
+        this.payErrDesc = payErrDesc;
     }
 
     public String getRobotUid() {
@@ -151,9 +199,6 @@ public class PmsOrderPay implements Serializable {
         this.robotModel = robotModel;
     }
 
-    private String orderRequest;
-
-    private String payRequest;
 
     public String getOrderRequestText() {
         return orderRequest;
@@ -181,13 +226,15 @@ public class PmsOrderPay implements Serializable {
         this.orderDetails = orderDetails;
     }
 
-    private transient Map<String, String> map;
+    // private transient Map<String, String> map;
+    //
+    // public Map<String, String> getMap() {
+    //     return map;
+    // }
+    //
+    // public void setMap(Map<String, String> map) {
+    //     this.map = map;
+    // }
 
-    public Map<String, String> getMap() {
-        return map;
-    }
 
-    public void setMap(Map<String, String> map) {
-        this.map = map;
-    }
 }

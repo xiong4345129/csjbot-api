@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.*;
@@ -37,7 +39,7 @@ public class WxController {
     private static final String FAIL = "FAIL";
 
     // todo
-    private final String wxOrderUrlStr = "https://api.mch.weixin.qq.com/pay/unifiedorder";
+    // private final String wxOrderUrlStr = "https://api.mch.weixin.qq.com/sandboxnew/pay/unifiedorder";
     private final URI wxOrderUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -48,14 +50,11 @@ public class WxController {
     public WxController(WxConfig config,
                         OrderPayDBService dbService,
                         MediaTypeParser mapper) {
+        wxOrderUrl = config.getOrderUrl();
+        if (wxOrderUrl == null) throw new NullPointerException("order url");
         this.dbService = dbService;
         this.mapper = mapper;
         this.builder = new WxOrderRequestBuilder(config, dbService);
-        try {
-            wxOrderUrl = new URI(wxOrderUrlStr);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("uri parse", e);
-        }
     }
 
     private ResponseEntity<String> doPost(URI uri,
@@ -79,39 +78,55 @@ public class WxController {
             mapper.deserialize(orderReqBody, WxClientOrderRequest.class, FMT_JSON);
         final String pseudoNo = orderReq.getData().getOrderPseudoNo();
         final String reqId = orderReq.getId();
-        PmsOrderPay orderPay = builder.buildData(orderReq, WxTradeType.NATIVE);
-        if (orderPay != null) {
-            orderPay.setOrderRequestText(orderReqBody);
-            dbService.newOrder(orderPay);
-            // send http request
-            final String orderId = orderPay.getOrderId();
-            ResponseEntity<String> wxHttpRes =
-                doPost(wxOrderUrl, orderPay.getPayRequestText(), APPLICATION_XML);
-            clientHttpRes = handleOrderResult(wxHttpRes, orderId, pseudoNo, reqId);
-        } else {
-            clientHttpRes = wrapErr(BAD_REQUEST, "下单请求解析失败", pseudoNo, reqId);// todo
+        PmsOrderPay orderPay = null;
+        try {
+            orderPay = builder.buildData(orderReq, WxTradeType.NATIVE);
+            if (orderPay != null) {
+                LOGGER.debug("orderId="+orderPay.getOrderId()+
+                    " 微信支付请求\n"+orderPay.getPayRequestText());
+                orderPay.setOrderRequestText(orderReqBody); // keep track
+                dbService.newOrder(orderPay);
+                ResponseEntity<String> wxHttpRes =
+                    doPost(wxOrderUrl, orderPay.getPayRequestText(), APPLICATION_XML);
+                clientHttpRes = handleOrderResult(wxHttpRes, orderPay, reqId);
+            } else {
+                clientHttpRes = wrapErr(BAD_REQUEST, "下单请求解析失败", pseudoNo, reqId);// todo
+            }
+        } catch (Exception e) {
+            LOGGER.error("build data" + reqId, e);
+            clientHttpRes = wrapErr(INTERNAL_SERVER_ERROR, "下单请求解析失败", pseudoNo, reqId);
         }
         return clientHttpRes;
     }
 
     private ResponseEntity<String> handleOrderResult(ResponseEntity<String> wxHttpRes,
-                                                     String orderId, String pseudoNo,
-                                                     String reqId) {
+                                                     PmsOrderPay orderPay, String reqId) {
         ResponseEntity<String> clientHttpRes;
+        final String pseudoNo = orderPay.getOrderPseudoNo();
+        final String orderId = orderPay.getOrderId();
         if (OK == wxHttpRes.getStatusCode()) {
             String wxOrderResBody = wxHttpRes.getBody();
-            WxOrderResponse wxOrderRes =
-                mapper.deserialize(wxOrderResBody, WxOrderResponse.class, FMT_XML);
+            LOGGER.debug("orderId=" + orderId + " 微信统一下单返回\n" + wxOrderResBody);
+            WxPayResponse wxOrderRes =
+                mapper.deserialize(wxOrderResBody, WxPayResponse.class, FMT_XML);
             if (wxOrderRes != null) {
                 if (isSuccess(wxOrderRes)) {
-                    final String codeUrl = wxOrderRes.getCodeUrl();
-                    final String prepayId = wxOrderRes.getPrepayId();
-                    // todo update in db
-                    clientHttpRes = wrapOk(orderId, pseudoNo, codeUrl, reqId);
+                    orderPay.setOrderStatus(OrderStatus.SUCCESS);
+                    orderPay.setPayStatus(PayStatus.WAIT);
+                    orderPay.setPayCodeUrl(wxOrderRes.getCodeUrl());
+                    orderPay.setPrePayId(wxOrderRes.getPrepayId());
+                    dbService.updateOrder(orderPay);
+                    clientHttpRes = wrapOk(orderPay, reqId);
                 } else {
+                    final String errCode = wxOrderRes.getReturnCode(); // todo
+                    final String errDesc = wxOrderRes.getReturnMsg();
+                    orderPay.setOrderStatus(OrderStatus.FAIL);
+                    orderPay.setPayStatus(PayStatus.FAIL);
+                    orderPay.setOrderErrCode(errCode);
+                    orderPay.setOrderErrDesc(errDesc);
+                    dbService.updateOrder(orderPay);
                     clientHttpRes = wrapErr(FORBIDDEN,
-                        "向微信请求下单失败，错误码" + wxOrderRes.getErrCode(),
-                        pseudoNo, reqId);
+                        "向微信请求支付失败，错误码: " + errCode, pseudoNo, reqId);
                 }
             } else {
                 LOGGER.error("json error");
@@ -123,8 +138,13 @@ public class WxController {
         return clientHttpRes;
     }
 
-    private static boolean isSuccess(WxOrderResponse res) {
+    private static boolean isSuccess(WxPayResponse res) {
         return SUCCESS.equals(res.getResultCode()) && SUCCESS.equals(res.getResultCode());
+    }
+
+    private ResponseEntity<String> wrapOk(PmsOrderPay orderPay, String reqId) {
+        return wrapOk(orderPay.getOrderId(), orderPay.getOrderPseudoNo(),
+            orderPay.getPayCodeUrl(), reqId);
     }
 
     // todo
@@ -133,7 +153,7 @@ public class WxController {
         WxClientOrderResponse.Data data =
             new WxClientOrderResponse.Data(orderId, pseudoNo, codeUrl);
         WxClientOrderResponse res =
-            new WxClientOrderResponse(OrderStatus.SUCCESS.name(), data);
+            new WxClientOrderResponse(OrderStatus.SUCCESS, data);
         res.setId(reqId);
         return jsonResponse(OK, res);
     }
@@ -144,7 +164,7 @@ public class WxController {
             new WxClientOrderResponse.Error(status.value(), msg);
         error.setOrderPseudoNo(pseudoNo);
         WxClientOrderResponse res =
-            new WxClientOrderResponse(OrderStatus.FAIL.name(), error);
+            new WxClientOrderResponse(OrderStatus.FAIL, error);
         res.setId(reqId);
         return jsonResponse(status, res);
     }
@@ -155,7 +175,25 @@ public class WxController {
     @RequestMapping(value = "/callback", method = RequestMethod.POST)
     public void callback(@RequestBody String callbackBody) {
         LOGGER.debug("callback " + callbackBody);
+        WxPayCallback payCallback = mapper.deserialize(callbackBody, WxPayCallback.class, FMT_JSON);
+        if (SUCCESS.equals(payCallback.getReturnCode())) {
+            final String orderId = payCallback.getOutTradeNo();
+            PmsOrderPay orderPay = new PmsOrderPay(orderId);
+            orderPay.setPayStatus(PayStatus.SUCCESS);
+        } else {
 
+        }
+    }
+
+    // 获得订单状态
+    @RequestMapping(value = "/getOrderStatus", method = RequestMethod.GET)
+    public ResponseEntity<String> getAllGroup(@RequestParam("order_id") String orderId) {
+        Map<String, String> msgMap = new HashMap<>();
+        String orderStatus = dbService.getOrderStatus(orderId);
+        msgMap.put("order_id", orderId);
+        msgMap.put("order_status", orderStatus);
+        msgMap.put("message", "ok");
+        return jsonResponse(OK, msgMap);
     }
 
     private ResponseEntity<String> jsonResponse(HttpStatus status, Object obj) {
@@ -165,7 +203,7 @@ public class WxController {
     private ResponseEntity<String> jsonResponse(HttpStatus status, String jsonBody) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(APPLICATION_JSON);
-        return new ResponseEntity<String>(jsonBody, headers, status);
+        return new ResponseEntity<>(jsonBody, headers, status);
     }
 
 }
