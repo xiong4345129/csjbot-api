@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.dao.Frs_faceDAO">
+  <select id="findFaceByFaceId" resultType="com.csjbot.model.Frs_face">
+		select * from frs_face where face_id=#{face_id}
+	</select>
+	<select id="findFaceByPerId" resultType="com.csjbot.model.Frs_face">
+		select * from frs_face where person_id=#{person_id}
+	</select>
+</mapper>
