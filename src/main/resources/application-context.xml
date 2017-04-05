@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 启动上下文的注解配置 -->
+    <context:annotation-config/>
+
+    <!-- 自动加载数据库属性配置文件 -->
+    <context:property-placeholder location="classpath*:application.properties" order="1"
+                                  ignore-unresolvable="true" ignore-resource-not-found="true"/>
+    <context:property-placeholder location="classpath*:jdbc.properties" order="2"
+                                  ignore-unresolvable="true" ignore-resource-not-found="true"/>
+    <context:property-placeholder location="classpath*:config.properties" order="3"
+                                  ignore-unresolvable="true" ignore-resource-not-found="true"/>
+
+    <!-- 配置数据源，使用阿里巴巴的druid数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!-- 配置Session工厂 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="mapperLocations" value="classpath*:/com/csjbot/api/**/mapper/*.xml"/>
+        <property name="dataSource" ref="dataSource"></property>
+        <!--todo typeAliasesPackage? -->
+        <!--<property name="typeAliasesPackage" value="com.csjbot.model"></property>-->
+        <!--<property name="typeAliasesPackage" value="com.csjbot.model,com.csjbot.pay.model"></property>-->
+        <!--<property name="typeHandlersPackage" value="org.apache.ibatis.type" />-->
+    </bean>
+
+</beans> 

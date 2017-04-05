@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util
+       http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!--mutual import? relative path-->
+    <import resource="application-context.xml"/>
+
+    <bean id="mybatisOrderPayDBService" class="com.csjbot.api.pay.service.MybatisOrderPayDBService">
+        <constructor-arg ref="sqlSessionFactory"/>
+    </bean>
+
+    <util:properties id="appProperties" location="classpath:application.properties"/>
+    <bean id="wxConfig" class="com.csjbot.api.pay.controller.WxConfig">
+        <constructor-arg ref="appProperties"/>
+    </bean>
+    <bean id="jacksonMapper" class="com.csjbot.api.pay.service.JacksonMapper"/>
+
+    <!--<bean id="wxReqBuilder" class="com.csjbot.com.csjbot.api.pay.controller.WxOrderRequestBuilder">-->
+        <!--<constructor-arg ref="wxConfig"/>-->
+        <!--<constructor-arg ref="mybatisOrderPayDBService"/>-->
+    <!--</bean>-->
+
+    <bean id="wxController" class="com.csjbot.api.pay.controller.WxController">
+        <constructor-arg type="com.csjbot.api.pay.controller.WxConfig"
+                         ref="wxConfig"/>
+        <constructor-arg type="com.csjbot.api.pay.service.MediaTypeParser"
+                         ref="jacksonMapper"/>
+        <constructor-arg type="com.csjbot.api.pay.service.OrderPayDBService"
+                         ref="mybatisOrderPayDBService"/>
+    </bean>
+</beans>
