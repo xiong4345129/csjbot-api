@@ -44,7 +44,6 @@ public class WxPayRequestBuilder {
     private final String hostIp;
     private final String callbackUrl;
     private final String apiKey, appId, mchId;
-    private final Env env;
     private final boolean isSandboxKey;
 
     private final OrderPayDBService dbService;
@@ -58,7 +57,6 @@ public class WxPayRequestBuilder {
         this.apiKey = accMap.get(K_API_KEY);
         this.appId = accMap.get(K_APPID);
         this.mchId = accMap.get(K_MCH_ID);
-        this.env = config.getkEnv();
         this.isSandboxKey = config.isSandboxKey();
         this.hostIp = config.getServerIP();
         this.callbackUrl = config.getCallbackUrlStr();

@@ -13,7 +13,24 @@
     <!--=========================================-->
     <!--通用Spring mvc配置-->
     <!-- 注解驱动 -->
-    <mvc:annotation-driven/>
+    <mvc:annotation-driven>
+        <!--<mvc:message-converters register-defaults="true">-->
+            <!--<bean class="org.springframework.http.converter.StringHttpMessageConverter">-->
+                <!--<property name="supportedMediaTypes">-->
+                    <!--<value>text/plain;charset=UTF-8</value>-->
+                <!--</property>-->
+            <!--</bean>-->
+        <!--</mvc:message-converters>-->
+    </mvc:annotation-driven>
+
+    <bean id="stringConverter"
+          class="org.springframework.http.converter.StringHttpMessageConverter">
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/plain;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
 
     <context:component-scan base-package="com.csjbot.api">
         <context:include-filter type="regex" expression=".*\.(controller|service)\..*"/>

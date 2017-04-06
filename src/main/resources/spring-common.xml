@@ -5,9 +5,11 @@
                            http://www.springframework.org/schema/beans/spring-beans.xsd
     ">
 
-    <!-- 扫描 Mapper接口与文件 -->
+    <!--<import resource="application-context.xml"/>-->
+
+    <!--&lt;!&ndash; 扫描 Mapper接口与文件 &ndash;&gt;-->
     <bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.csjbot.dao"/>
+        <property name="basePackage" value="com.csjbot.**.dao"/>
         <property name="markerInterface" value="com.csjbot.api.common.dao.BaseDAO"></property>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
         <property name="properties">

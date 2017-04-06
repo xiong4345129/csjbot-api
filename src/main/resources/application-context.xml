@@ -37,4 +37,4 @@
         <!--<property name="typeHandlersPackage" value="org.apache.ibatis.type" />-->
     </bean>
 
-</beans> 
+</beans>

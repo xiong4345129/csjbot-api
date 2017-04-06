@@ -81,9 +81,9 @@
 
 
     <insert id="insertOrderList" parameterType="java.util.List">
-        INSERT INTO pms_order_detail( order_id, item_id, item_amount) VALUES
+        INSERT INTO pms_order_detail( order_id, item_id, item_qty, unit_price) VALUES
         <foreach collection="list" item="element" index="index" open="(" separator="),(" close=")">
-            #{element.orderId}, #{element.itemId}, #{element.itemAmount}
+            #{element.orderId}, #{element.itemId}, #{element.itemQty}, #{element.unitPrice}
         </foreach>
     </insert>
 

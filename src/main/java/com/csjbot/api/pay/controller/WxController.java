@@ -6,10 +6,12 @@ import com.csjbot.api.pay.service.OrderPayDBService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +56,8 @@ public class WxController {
         this.dbService = dbService;
         this.mapper = mapper;
         this.builder = new WxPayRequestBuilder(config, dbService);
+        this.restTemplate.getMessageConverters()
+            .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
     }
 
     private ResponseEntity<String> doPost(URI uri,
@@ -85,6 +89,7 @@ public class WxController {
                     " 微信支付请求\n"+orderPay.getPayRequestText());
                 orderPay.setOrderRequestText(orderReqBody); // keep track
                 dbService.newOrder(orderPay);
+                dbService.insertOrderList(orderPay.getOrderDetails());
                 ResponseEntity<String> wxHttpRes =
                     doPost(wxOrderUrl, orderPay.getPayRequestText(), APPLICATION_XML);
                 clientHttpRes = handleOrderResult(wxHttpRes, orderPay, reqId);
@@ -105,6 +110,8 @@ public class WxController {
         final String orderId = orderPay.getOrderId();
         if (OK == wxHttpRes.getStatusCode()) {
             String wxOrderResBody = wxHttpRes.getBody();
+            LOGGER.debug(System.getProperty("file.encoding"));
+            LOGGER.debug(Charset.defaultCharset().name());
             LOGGER.debug("orderId=" + orderId + " 微信统一下单返回\n" + wxOrderResBody);
             WxPayResponse wxOrderRes =
                 mapper.deserialize(wxOrderResBody, WxPayResponse.class, FMT_XML);

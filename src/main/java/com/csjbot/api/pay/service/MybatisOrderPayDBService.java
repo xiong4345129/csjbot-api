@@ -42,8 +42,8 @@ public class MybatisOrderPayDBService implements OrderPayDBService {
     }
 
     @Override
-    public int insertOrderList(List<PmsOrderDetail> list) {
-        return sqlSession.insert(getStatement("insertOrderList"), list);
+    public int insertOrderList(List<PmsOrderDetail> items) {
+        return sqlSession.insert(getStatement("insertOrderList"), items);
     }
 
     @Override
