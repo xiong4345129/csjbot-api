@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.csjbot.dao.Frs_groupDAO">
-  <select id="findGroupByGroupId" resultType="com.csjbot.model.Frs_group">
-		select * from frs_group where group_id=#{group_id}
-	</select>
-</mapper>

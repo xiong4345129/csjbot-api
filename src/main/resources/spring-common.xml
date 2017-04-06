@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+    ">
+
+    <!-- 扫描 Mapper接口与文件 -->
+    <bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.csjbot.dao"/>
+        <property name="markerInterface" value="com.csjbot.api.common.dao.BaseDAO"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+        <property name="properties">
+            <value>
+                mappers = com.csjbot.api.common.dao.BaseDAO
+                IDENTITY = MYSQL
+            </value>
+        </property>
+    </bean>
+
+</beans>
