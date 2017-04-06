@@ -1,8 +1,9 @@
 package com.csjbot.api.pay.controller;
 
 import com.csjbot.api.pay.model.*;
-import com.csjbot.api.pay.model.PmsOrderDetail;
+import com.csjbot.api.pay.model.PmsOrderItem;
 import com.csjbot.api.pay.service.OrderPayDBService;
+import com.csjbot.api.pay.service.WxConfig;
 import com.csjbot.api.pay.util.OrderIdGen;
 import com.csjbot.api.pay.util.RandomGen;
 import com.csjbot.api.pay.util.WxUtil;
@@ -63,12 +64,16 @@ public class WxPayRequestBuilder {
     }
 
     public PmsOrderPay buildData(WxClientOrderRequest clientReq,
-                                 WxTradeType tradeTypeEnum) throws Exception {
+                                 WxTradeType tradeTypeEnum) {
+        PmsOrderPay res = null;
         if (WxTradeType.NATIVE == tradeTypeEnum) {
-            return buildQrPayRequestData(clientReq);
-        } else {
-            return null;
+            try {
+                res = buildQrPayRequestData(clientReq);
+            } catch (Exception e) {
+                LOGGER.error("build data", e);
+            }
         }
+        return res;
     }
 
     // todo validation
@@ -78,7 +83,7 @@ public class WxPayRequestBuilder {
         final String orderPseudoNo = clientData.getOrderPseudoNo();
         final Date orderTime = WxUtil.convert(clientData.getOrderTime());
         final String nonceStr = RandomGen.randStr(32, NONCE_STR_SRC);
-        final List<PmsOrderDetail> details =
+        final List<PmsOrderItem> details =
             transformOrderDetails(orderId, clientData.getOrderList());
         final Integer totalFee = sumFee(details);
         final String productId =
@@ -112,11 +117,11 @@ public class WxPayRequestBuilder {
     }
 
     // todo bad POJO design!
-    public List<PmsOrderDetail> transformOrderDetails(final String orderId, List<OrderItem> itemList) {
+    public List<PmsOrderItem> transformOrderDetails(final String orderId, List<OrderItem> itemList) {
         int cnt = itemList.size();
-        List<PmsOrderDetail> detailList = new ArrayList<>(cnt);
+        List<PmsOrderItem> detailList = new ArrayList<>(cnt);
         for (OrderItem item : itemList) {
-            PmsOrderDetail detail = new PmsOrderDetail(orderId, item.getObjectId(), item.getQty());
+            PmsOrderItem detail = new PmsOrderItem(orderId, item.getObjectId(), item.getQty());
             Integer unitPrice = dbService.getUnitPrice(item.getObjectId());
             // todo item not exit???
             detail.setUnitPrice(unitPrice == null ? 0 : unitPrice);
@@ -125,9 +130,9 @@ public class WxPayRequestBuilder {
         return detailList;
     }
 
-    public Integer sumFee(List<PmsOrderDetail> details) {
+    public Integer sumFee(List<PmsOrderItem> details) {
         Integer fee = 0;
-        for (PmsOrderDetail d : details) {
+        for (PmsOrderItem d : details) {
             fee = fee + d.getItemQty() * d.getUnitPrice();
         }
         return fee;

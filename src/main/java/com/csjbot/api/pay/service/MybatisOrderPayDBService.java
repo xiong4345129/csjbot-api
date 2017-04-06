@@ -1,6 +1,6 @@
 package com.csjbot.api.pay.service;
 
-import com.csjbot.api.pay.model.PmsOrderDetail;
+import com.csjbot.api.pay.model.PmsOrderItem;
 import com.csjbot.api.pay.model.PmsOrderPay;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -23,6 +23,10 @@ public class MybatisOrderPayDBService implements OrderPayDBService {
         this.sqlSession = new SqlSessionTemplate(factory);
     }
 
+    protected SqlSessionTemplate getSqlSession() {
+        return sqlSession;
+    }
+
     @Override
     public Map<String, String> getAccount() {
         List<HashMap<String, String>> res = sqlSession.selectList(getStatement("getAccount"));
@@ -42,7 +46,7 @@ public class MybatisOrderPayDBService implements OrderPayDBService {
     }
 
     @Override
-    public int insertOrderList(List<PmsOrderDetail> items) {
+    public int insertOrderList(List<PmsOrderItem> items) {
         return sqlSession.insert(getStatement("insertOrderList"), items);
     }
 
@@ -52,17 +56,14 @@ public class MybatisOrderPayDBService implements OrderPayDBService {
     }
 
     @Override
-    public String getOrderStatus(String orderId) {
-        return sqlSession.selectOne(getStatement("getOrderStatus"),orderId);
+    public PmsOrderPay getOrderPayRecord(String orderId) {
+        return sqlSession.selectOne(getStatement("getOrderPayRecord"), orderId);
     }
 
-    // @Override
-    // public int updateUnitPrice(String orderId) {
-    //     return sqlSession.update(getStatement("updateUnitPrice"), orderId);
-    // }
-    //
-    // @Override
-    // public Integer calculcateTotalFee(String orderId) {
-    //     return sqlSession.selectOne(getStatement("calculateTotalFee"), orderId);
-    // }
+    @Override
+    public boolean orderExists(String orderId) {
+        Integer cnt = sqlSession.selectOne(getStatement("orderExists"), orderId);
+        return cnt == 1;
+    }
+
 }

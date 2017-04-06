@@ -1,10 +1,12 @@
 package com.csjbot.api.pay.controller;
 
 import com.csjbot.api.pay.model.*;
-import com.csjbot.api.pay.service.MediaTypeParser;
-import com.csjbot.api.pay.service.OrderPayDBService;
+import com.csjbot.api.pay.service.*;
+import com.csjbot.api.pay.util.OrderIdGen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +14,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.*;
@@ -36,26 +39,24 @@ public class WxController {
     private static final Logger LOGGER = LoggerFactory.getLogger(WxController.class);
     private static final String FMT_JSON = "JSON";
     private static final String FMT_XML = "XML";
-    private static final String SUCCESS = "SUCCESS"; // default
-    private static final String FAIL = "FAIL";
 
     // todo
-    // private final String wxOrderUrlStr = "https://api.mch.weixin.qq.com/sandboxnew/pay/unifiedorder";
     private final URI wxOrderUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final OrderPayDBService dbService;
+    private final WxPayDBService dbService;
+    private final WxPayRequestBuilder reqBuilder;
     private final MediaTypeParser mapper;
-    private final WxPayRequestBuilder builder;
 
+    @Autowired
     public WxController(WxConfig config,
-                        OrderPayDBService dbService,
+                        @Qualifier("wxPayDBServiceQ") WxPayDBService wxPayDBService,
                         MediaTypeParser mapper) {
         wxOrderUrl = config.getOrderUrl();
         if (wxOrderUrl == null) throw new NullPointerException("order url");
-        this.dbService = dbService;
+        this.dbService = wxPayDBService;
         this.mapper = mapper;
-        this.builder = new WxPayRequestBuilder(config, dbService);
+        this.reqBuilder = new WxPayRequestBuilder(config, wxPayDBService); // todo
         this.restTemplate.getMessageConverters()
             .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
     }
@@ -71,7 +72,7 @@ public class WxController {
     }
 
     /**
-     * 二维码支付
+     * 二维码支付下单请求：设备->后台
      */
     @RequestMapping(value = "/qr", method = RequestMethod.POST)
     public ResponseEntity<String> orderQR(@RequestBody String orderReqBody) {
@@ -81,12 +82,11 @@ public class WxController {
             mapper.deserialize(orderReqBody, WxClientOrderRequest.class, FMT_JSON);
         final String pseudoNo = orderReq.getData().getOrderPseudoNo();
         final String reqId = orderReq.getId();
-        PmsOrderPay orderPay = null;
         try {
-            orderPay = builder.buildData(orderReq, WxTradeType.NATIVE);
+            PmsOrderPay orderPay = reqBuilder.buildData(orderReq, WxTradeType.NATIVE);
             if (orderPay != null) {
-                LOGGER.debug("orderId="+orderPay.getOrderId()+
-                    " 微信支付请求\n"+orderPay.getPayRequestText());
+                LOGGER.debug("orderId=" + orderPay.getOrderId() +
+                    " 微信支付请求\n" + orderPay.getPayRequestText());
                 orderPay.setOrderRequestText(orderReqBody); // keep track
                 dbService.newOrder(orderPay);
                 dbService.insertOrderList(orderPay.getOrderDetails());
@@ -94,11 +94,11 @@ public class WxController {
                     doPost(wxOrderUrl, orderPay.getPayRequestText(), APPLICATION_XML);
                 clientHttpRes = handleOrderResult(wxHttpRes, orderPay, reqId);
             } else {
-                clientHttpRes = wrapErr(BAD_REQUEST, "下单请求解析失败", pseudoNo, reqId);// todo
+                clientHttpRes = wrapOrderErr(BAD_REQUEST, "下单请求解析失败", pseudoNo, reqId);// todo
             }
         } catch (Exception e) {
             LOGGER.error("build data" + reqId, e);
-            clientHttpRes = wrapErr(INTERNAL_SERVER_ERROR, "下单请求解析失败", pseudoNo, reqId);
+            clientHttpRes = wrapOrderErr(INTERNAL_SERVER_ERROR, "下单请求解析失败", pseudoNo, reqId);
         }
         return clientHttpRes;
     }
@@ -108,108 +108,172 @@ public class WxController {
         ResponseEntity<String> clientHttpRes;
         final String pseudoNo = orderPay.getOrderPseudoNo();
         final String orderId = orderPay.getOrderId();
-        if (OK == wxHttpRes.getStatusCode()) {
-            String wxOrderResBody = wxHttpRes.getBody();
-            LOGGER.debug(System.getProperty("file.encoding"));
-            LOGGER.debug(Charset.defaultCharset().name());
-            LOGGER.debug("orderId=" + orderId + " 微信统一下单返回\n" + wxOrderResBody);
-            WxPayResponse wxOrderRes =
-                mapper.deserialize(wxOrderResBody, WxPayResponse.class, FMT_XML);
-            if (wxOrderRes != null) {
-                if (isSuccess(wxOrderRes)) {
+        String wxOrderResBody = wxHttpRes.getBody();
+        LOGGER.debug(System.getProperty("file.encoding"));
+        LOGGER.debug(Charset.defaultCharset().name());
+        LOGGER.debug("orderId=" + orderId + " 微信统一下单返回\n" + wxOrderResBody);
+        WxPayResponse wxOrderRes =
+            mapper.deserialize(wxOrderResBody, WxPayResponse.class, FMT_XML);
+        if (wxOrderRes != null) {
+            final String returnCode = wxOrderRes.getReturnCode(); // todo
+            final String returnMsg = wxOrderRes.getReturnMsg();
+            final String result = wxOrderRes.getResultCode();
+            if (ReturnStatus.isSuccess(returnCode)) {
+                if (OrderStatus.isSuccess(result)) {
+                    LOGGER.info("\n pseudoNo: " + pseudoNo +
+                        "  orderId: " + orderId + "\n" + wxOrderRes.getCodeUrl());
                     orderPay.setOrderStatus(OrderStatus.SUCCESS);
                     orderPay.setPayStatus(PayStatus.WAIT);
                     orderPay.setPayCodeUrl(wxOrderRes.getCodeUrl());
-                    orderPay.setPrePayId(wxOrderRes.getPrepayId());
+                    orderPay.setPrepayId(wxOrderRes.getPrepayId());
                     dbService.updateOrder(orderPay);
-                    clientHttpRes = wrapOk(orderPay, reqId);
+                    clientHttpRes = wrapOrderOk(orderPay, reqId);
                 } else {
-                    final String errCode = wxOrderRes.getReturnCode(); // todo
-                    final String errDesc = wxOrderRes.getReturnMsg();
+                    final String errCode = wxOrderRes.getErrCode();
+                    final String errDesc = wxOrderRes.getErrCodeDes();
                     orderPay.setOrderStatus(OrderStatus.FAIL);
                     orderPay.setPayStatus(PayStatus.FAIL);
                     orderPay.setOrderErrCode(errCode);
                     orderPay.setOrderErrDesc(errDesc);
                     dbService.updateOrder(orderPay);
-                    clientHttpRes = wrapErr(FORBIDDEN,
-                        "向微信请求支付失败，错误码: " + errCode, pseudoNo, reqId);
+                    clientHttpRes = wrapOrderErr(FORBIDDEN, pseudoNo,
+                        errCode, errDesc, "支付请求失败", reqId);
                 }
             } else {
-                LOGGER.error("json error");
-                clientHttpRes = wrapErr(BAD_GATEWAY, "协议异常", pseudoNo, reqId);
+                clientHttpRes = wrapOrderErr(BAD_GATEWAY, pseudoNo,
+                    returnCode, returnMsg, "通信异常", reqId);
             }
         } else {
-            clientHttpRes = wrapErr(BAD_GATEWAY, "向微信请求失败", pseudoNo, reqId);
+            LOGGER.error("json error");
+            clientHttpRes = wrapOrderErr(BAD_GATEWAY, pseudoNo, "通信异常", reqId);
         }
         return clientHttpRes;
     }
 
-    private static boolean isSuccess(WxPayResponse res) {
-        return SUCCESS.equals(res.getResultCode()) && SUCCESS.equals(res.getResultCode());
-    }
-
-    private ResponseEntity<String> wrapOk(PmsOrderPay orderPay, String reqId) {
-        return wrapOk(orderPay.getOrderId(), orderPay.getOrderPseudoNo(),
+    private ResponseEntity<String> wrapOrderOk(PmsOrderPay orderPay, String reqId) {
+        return wrapOrderOk(orderPay.getOrderId(), orderPay.getOrderPseudoNo(),
             orderPay.getPayCodeUrl(), reqId);
     }
 
     // todo
-    private ResponseEntity<String> wrapOk(String orderId, String pseudoNo,
-                                          String codeUrl, String reqId) {
-        WxClientOrderResponse.Data data =
-            new WxClientOrderResponse.Data(orderId, pseudoNo, codeUrl);
+    private ResponseEntity<String> wrapOrderOk(String orderId, String pseudoNo,
+                                               String codeUrl, String reqId) {
         WxClientOrderResponse res =
-            new WxClientOrderResponse(OrderStatus.SUCCESS, data);
+            new WxClientOrderResponse(OrderStatus.SUCCESS, pseudoNo);
         res.setId(reqId);
+        res.setOrderId(orderId);
+        res.setCodeUrl(codeUrl);
         return jsonResponse(OK, res);
     }
 
-    private ResponseEntity<String> wrapErr(HttpStatus status, String msg,
-                                           String pseudoNo, String reqId) {
-        WxClientOrderResponse.Error error =
-            new WxClientOrderResponse.Error(status.value(), msg);
-        error.setOrderPseudoNo(pseudoNo);
+    private ResponseEntity<String> wrapOrderErr(HttpStatus status, String pseudoNo,
+                                                String remark, String reqId) {
+        return wrapOrderErr(status, pseudoNo,
+            String.valueOf(status.value()), status.getReasonPhrase(),
+            remark, reqId);
+    }
+
+    private ResponseEntity<String> wrapOrderErr(HttpStatus status, String pseudoNo,
+                                                String errCode, String errDesc,
+                                                String remark, String reqId) {
+
         WxClientOrderResponse res =
-            new WxClientOrderResponse(OrderStatus.FAIL, error);
+            new WxClientOrderResponse(OrderStatus.FAIL, pseudoNo);
         res.setId(reqId);
+        res.setErrCode(errCode);
+        res.setErrDesc(errDesc);
+        res.setRemark(remark);
         return jsonResponse(status, res);
     }
 
     /**
-     * 微信平台异步通知结果
+     * 微信平台异步通知结果：微信->后台
      */
-    @RequestMapping(value = "/callback", method = RequestMethod.POST)
-    public void callback(@RequestBody String callbackBody) {
-        LOGGER.debug("callback " + callbackBody);
-        WxPayCallback payCallback = mapper.deserialize(callbackBody, WxPayCallback.class, FMT_JSON);
-        if (SUCCESS.equals(payCallback.getReturnCode())) {
+    @RequestMapping(value = "/callback", method = RequestMethod.POST, consumes = TEXT_XML_VALUE)
+    public ResponseEntity<String> callback(@RequestBody String callbackBody) {
+        LOGGER.debug("pay callback\n" + callbackBody);
+        WxPayCallbackResponse res = new WxPayCallbackResponse(ReturnStatus.FAIL);
+        WxPayCallback payCallback = mapper.deserialize(callbackBody, WxPayCallback.class, FMT_XML);
+        if (payCallback != null && ReturnStatus.isSuccess(payCallback.getReturnCode())) {
             final String orderId = payCallback.getOutTradeNo();
-            PmsOrderPay orderPay = new PmsOrderPay(orderId);
-            orderPay.setPayStatus(PayStatus.SUCCESS);
-        } else {
-
+            if (OrderIdGen.check(orderId) && dbService.orderExists(orderId)) {
+                if (!dbService.resultExists(orderId)) {
+                    PmsOrderPay orderPay = new PmsOrderPay(orderId);
+                    final String result = payCallback.getResultCode();
+                    if (PayStatus.isSuccess(result)) {
+                        orderPay.setPayStatus(PayStatus.SUCCESS);
+                        orderPay.setPayTimeEnd(parseDate(payCallback.getTimeEnd()));
+                    } else {
+                        orderPay.setPayStatus(PayStatus.FAIL);
+                        orderPay.setPayErrCode(payCallback.getErrCode());
+                        orderPay.setPayErrDesc(payCallback.getErrCodeDes());
+                    }
+                    dbService.updateOrder(orderPay);
+                    dbService.storePayResult(payCallback);
+                }
+                res = new WxPayCallbackResponse(ReturnStatus.SUCCESS);
+            }
         }
+        // todo check sign!
+        return xmlResponse(OK, res);
     }
 
-    // 获得订单状态
-    @RequestMapping(value = "/getOrderStatus", method = RequestMethod.GET)
-    public ResponseEntity<String> getAllGroup(@RequestParam("order_id") String orderId) {
-        Map<String, String> msgMap = new HashMap<>();
-        String orderStatus = dbService.getOrderStatus(orderId);
-        msgMap.put("order_id", orderId);
-        msgMap.put("order_status", orderStatus);
-        msgMap.put("message", "ok");
-        return jsonResponse(OK, msgMap);
+    /**
+     * 订单状况查询：设备->后台
+     */
+    @RequestMapping(value = "/query", method = RequestMethod.GET)
+    public ResponseEntity<String> getAllGroup(@RequestParam("orderid") String orderId) {
+        HttpStatus status;
+        WxQueryResponse res = new WxQueryResponse(orderId);
+        if (OrderIdGen.check(orderId)) {
+            PmsOrderPay orderPay = dbService.getOrderPayRecord(orderId);
+            if (orderPay != null) {
+                status = OK;
+                res.setOrderTime(formatDate(orderPay.getCreateTime()));
+                res.setPayStatus(orderPay.getPayStatus());
+                Date payEndTime = orderPay.getPayTimeEnd();
+                if (payEndTime != null) res.setPayTimeEnd(formatDate(payEndTime));
+            } else {
+                status = NOT_FOUND;
+                res.setRemark("未找到记录");
+            }
+        } else {
+            status = BAD_REQUEST;
+            res.setRemark("订单号格式不符");
+        }
+        return jsonResponse(status, res);
+    }
+
+    // todo do not use Date
+    private String formatDate(Date date) {
+        SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dt.format(date);
+    }
+
+    private Date parseDate(String str) {
+        SimpleDateFormat dt = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date date = null;
+        try {
+            date = dt.parse(str);
+        } catch (ParseException e) {
+            LOGGER.error("parse date from " + str, e);
+        }
+        return date;
     }
 
     private ResponseEntity<String> jsonResponse(HttpStatus status, Object obj) {
-        return jsonResponse(status, mapper.serialize(obj, FMT_JSON));
+        return textResponse(status, APPLICATION_JSON, mapper.serialize(obj, FMT_JSON));
     }
 
-    private ResponseEntity<String> jsonResponse(HttpStatus status, String jsonBody) {
+    private ResponseEntity<String> xmlResponse(HttpStatus status, Object obj) {
+        return textResponse(status, APPLICATION_XML, mapper.serialize(obj, FMT_XML));
+    }
+
+    private ResponseEntity<String> textResponse(HttpStatus status, MediaType mediaType, String jsonBody) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(APPLICATION_JSON);
+        headers.setContentType(mediaType);
         return new ResponseEntity<>(jsonBody, headers, status);
     }
+
 
 }

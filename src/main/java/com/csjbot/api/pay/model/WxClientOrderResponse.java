@@ -3,18 +3,17 @@ package com.csjbot.api.pay.model;
 public class WxClientOrderResponse {
     private String id;
 
-    private String status;
-    private Data data;
-    private Error error;
+    private final String orderStatus;
+    private final String orderPseudoNo;
+    private String orderId;
+    private String codeUrl;
+    private String errCode;
+    private String errDesc;
+    private String remark;
 
-    public WxClientOrderResponse(OrderStatus status, Data data) {
-        this.status = status.name();
-        this.data = data;
-    }
-
-    public WxClientOrderResponse(OrderStatus status, Error error) {
-        this.status = status.name();
-        this.error = error;
+    public WxClientOrderResponse(OrderStatus status, String pseudoNo) {
+        this.orderStatus = status.name();
+        this.orderPseudoNo = pseudoNo;
     }
 
     public String getId() {
@@ -25,68 +24,51 @@ public class WxClientOrderResponse {
         this.id = id;
     }
 
-    public String getStatus() {
-        return status;
+    public String getOrderStatus() {
+        return orderStatus;
     }
 
-    public Data getData() {
-        return data;
+    public String getOrderPseudoNo() {
+        return orderPseudoNo;
     }
 
-    public Error getError() {
-        return error;
+    public String getOrderId() {
+        return orderId;
     }
 
-    public static class Data {
-        private final String orderPseudoNo;
-        private final String orderId;
-        private final String codeUrl;
-
-        public Data(String orderId,
-                    String orderPseudoNo,
-                    String codeUrl) {
-            this.orderPseudoNo = orderPseudoNo;
-            this.orderId = orderId;
-            this.codeUrl = codeUrl;
-        }
-
-        public String getOrderPseudoNo() {
-            return orderPseudoNo;
-        }
-
-        public String getOrderId() {
-            return orderId;
-        }
-
-        public String getCodeUrl() {
-            return codeUrl;
-        }
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
-    public static class Error {
-        private String orderPseudoNo;
-        private final Integer code;
-        private final String message;
+    public String getCodeUrl() {
+        return codeUrl;
+    }
 
-        public Error(Integer code, String message) {
-            this.code = code;
-            this.message = message;
-        }
+    public void setCodeUrl(String codeUrl) {
+        this.codeUrl = codeUrl;
+    }
 
-        public String getOrderPseudoNo() {
-            return orderPseudoNo;
-        }
+    public String getErrCode() {
+        return errCode;
+    }
 
-        public void setOrderPseudoNo(String orderPseudoNo) {
-            this.orderPseudoNo = orderPseudoNo;
-        }
+    public void setErrCode(String errCode) {
+        this.errCode = errCode;
+    }
 
-        public Integer getCode() {
-            return code;
-        }
+    public String getErrDesc() {
+        return errDesc;
+    }
 
-        public String getMessage() {
-            return message;
-        }
+    public void setErrDesc(String errDesc) {
+        this.errDesc = errDesc;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }

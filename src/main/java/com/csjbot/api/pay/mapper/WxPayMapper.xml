@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.pay.service.WxPayDBService">
+    <resultMap id="WxPayCallbackRecordMap" type="com.csjbot.api.pay.model.WxPayCallback">
+        <id column="order_id" jdbcType="VARCHAR" property="orderId"/>
+        <result column="device_info" jdbcType="VARCHAR" property="deviceInfo"/>
+        <result column="openid" jdbcType="VARCHAR" property="openid"/>
+        <result column="is_subscribe" jdbcType="VARCHAR" property="isSubscribe"/>
+        <result column="trade_type" jdbcType="VARCHAR" property="tradeType"/>
+        <result column="bank_type" jdbcType="VARCHAR" property="bankType"/>
+        <result column="total_fee" jdbcType="INTEGER" property="totalFee"/>
+        <result column="settlement_total_fee" jdbcType="INTEGER" property="settlementTotalFee"/>
+        <result column="fee_type" jdbcType="VARCHAR" property="feeType"/>
+        <result column="cash_fee" jdbcType="INTEGER" property="cashFee"/>
+        <result column="cash_fee_type" jdbcType="VARCHAR" property="cashFeeType"/>
+        <result column="coupon_fee" jdbcType="INTEGER" property="couponFee"/>
+        <result column="coupon_count" jdbcType="INTEGER" property="couponCount"/>
+        <result column="coupon_type_$n" jdbcType="INTEGER" property="couponType$N"/>
+        <result column="coupon_id_$n" jdbcType="VARCHAR" property="couponId$N"/>
+        <result column="coupon_fee_$n" jdbcType="INTEGER" property="couponFee$N"/>
+        <result column="transaction_id" jdbcType="VARCHAR" property="transactionId"/>
+        <result column="out_trade_no" jdbcType="VARCHAR" property="outTradeNo"/>
+        <result column="attach" jdbcType="VARCHAR" property="attach"/>
+        <result column="time_end" jdbcType="VARCHAR" property="timeEnd"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    order_id, device_info, openid, is_subscribe, trade_type, bank_type, total_fee, settlement_total_fee, 
+    fee_type, cash_fee, cash_fee_type, coupon_fee, coupon_count, coupon_type_$n, coupon_id_$n, 
+    coupon_fee_$n, transaction_id, out_trade_no, attach, time_end
+  </sql>
+
+    <insert id="storePayResult" parameterType="com.csjbot.api.pay.model.WxPayCallback">
+        insert into pms_pay_detail_wx
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            order_id,
+            <if test="deviceInfo != null"> device_info, </if>
+            openid,
+            <if test="isSubscribe != null"> is_subscribe, </if>
+            trade_type,
+            bank_type,
+            total_fee,
+            <if test="settlementTotalFee != null"> settlement_total_fee, </if>
+            <if test="feeType != null"> fee_type, </if>
+            cash_fee,
+            <if test="cashFeeType != null"> cash_fee_type, </if>
+            <if test="couponFee != null"> coupon_fee, </if>
+            <if test="couponCount != null"> coupon_count, </if>
+            <if test="couponType$N != null"> coupon_type_$n, </if>
+            <if test="couponId$N != null"> coupon_id_$n, </if>
+            <if test="couponFee$N != null"> coupon_fee_$n, </if>
+            transaction_id,
+            out_trade_no,
+            <if test="attach != null"> attach, </if>
+            time_end,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{orderId,jdbcType=VARCHAR},
+            <if test="deviceInfo != null"> #{deviceInfo,jdbcType=VARCHAR}, </if>
+            #{openid,jdbcType=VARCHAR},
+            <if test="isSubscribe != null"> #{isSubscribe,jdbcType=VARCHAR}, </if>
+            #{tradeType,jdbcType=VARCHAR},
+            #{bankType,jdbcType=VARCHAR},
+            #{totalFee,jdbcType=INTEGER},
+            <if test="settlementTotalFee != null"> #{settlementTotalFee,jdbcType=INTEGER}, </if>
+            <if test="feeType != null"> #{feeType,jdbcType=VARCHAR}, </if>
+            #{cashFee,jdbcType=INTEGER},
+            <if test="cashFeeType != null">#{cashFeeType,jdbcType=VARCHAR},</if>
+            <if test="couponFee != null">#{couponFee,jdbcType=INTEGER},</if>
+            <if test="couponCount != null">#{couponCount,jdbcType=INTEGER},</if>
+            <if test="couponType$N != null">#{couponType$N,jdbcType=INTEGER},</if>
+            <if test="couponId$N != null">#{couponId$N,jdbcType=VARCHAR},</if>
+            <if test="couponFee$N != null">#{couponFee$N,jdbcType=INTEGER},</if>
+            #{transactionId,jdbcType=VARCHAR},
+            #{outTradeNo,jdbcType=VARCHAR},
+            <if test="attach != null">#{attach,jdbcType=VARCHAR},</if>
+            #{timeEnd,jdbcType=VARCHAR},
+        </trim>
+    </insert>
+
+    <select id="resultExists" resultType="java.lang.Integer" parameterType="string">
+        SELECT EXISTS(SELECT 1 FROM pms_pay_detail_wx WHERE order_id= #{orderId} );
+    </select>
+
+</mapper>

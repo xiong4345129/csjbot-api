@@ -4,6 +4,8 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 public class WxPayCallback {
 
+    public String getOrderId() { return outTradeNo; }
+
     @JacksonXmlProperty(localName = "return_code") private String returnCode;
     @JacksonXmlProperty(localName = "return_msg") private String returnMsg;
     @JacksonXmlProperty(localName = "appid") private String appid;

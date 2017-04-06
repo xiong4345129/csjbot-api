@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * @author
  */
-public class PmsOrderDetail implements Serializable {
+public class PmsOrderItem implements Serializable {
     private final String orderId;
 
     private final String itemId;
@@ -16,7 +16,7 @@ public class PmsOrderDetail implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public PmsOrderDetail(String orderId, String itemId, Integer itemQty) {
+    public PmsOrderItem(String orderId, String itemId, Integer itemQty) {
         this.orderId = orderId;
         this.itemId = itemId;
         this.itemQty = itemQty;

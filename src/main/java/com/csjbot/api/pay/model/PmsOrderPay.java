@@ -25,10 +25,11 @@ public class PmsOrderPay implements Serializable {
     private String payCodeUrl;
     private String payProductId;
     private String payStatus;
+    private Date payTimeEnd;
     private String payErrCode;
     private String payErrDesc;
 
-    private String prePayId;
+    private String prepayId;
 
     private String robotUid;
     private String robotModel;
@@ -37,6 +38,8 @@ public class PmsOrderPay implements Serializable {
     private String payRequest;
 
     private static final long serialVersionUID = 1L;
+
+    public PmsOrderPay() { }
 
     public PmsOrderPay(String orderId) {
         this.orderId = orderId;
@@ -142,12 +145,12 @@ public class PmsOrderPay implements Serializable {
         this.payProductId = payProductId;
     }
 
-    public String getPrePayId() {
-        return prePayId;
+    public String getPrepayId() {
+        return prepayId;
     }
 
-    public void setPrePayId(String prePayId) {
-        this.prePayId = prePayId;
+    public void setPrepayId(String prepayId) {
+        this.prepayId = prepayId;
     }
 
     public String getPayStatus() {
@@ -158,10 +161,13 @@ public class PmsOrderPay implements Serializable {
         this.payStatus = status.name();
     }
 
-    // public void setPayStatus(String payStatus) {
-    //     this.payStatus = payStatus;
-    // }
+    public Date getPayTimeEnd() {
+        return payTimeEnd;
+    }
 
+    public void setPayTimeEnd(Date payTimeEnd) {
+        this.payTimeEnd = payTimeEnd;
+    }
 
     public String getPayErrCode() {
         return payErrCode;
@@ -212,13 +218,13 @@ public class PmsOrderPay implements Serializable {
         this.payRequest = payRequest;
     }
 
-    private transient List<PmsOrderDetail> orderDetails;
+    private transient List<PmsOrderItem> orderDetails;
 
-    public List<PmsOrderDetail> getOrderDetails() {
+    public List<PmsOrderItem> getOrderDetails() {
         return orderDetails;
     }
 
-    public void setOrderDetails(List<PmsOrderDetail> orderDetails) {
+    public void setOrderDetails(List<PmsOrderItem> orderDetails) {
         this.orderDetails = orderDetails;
     }
 

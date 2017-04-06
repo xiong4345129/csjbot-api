@@ -4,5 +4,9 @@ public enum OrderStatus {
     ACCEPT,
     // REJECT,
     FAIL,
-    SUCCESS
+    SUCCESS;
+
+    public static boolean isSuccess(String val) {
+        return SUCCESS.name().equals(val);
+    }
 }
