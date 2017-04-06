@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-/target
-/.settings
-/bin
-.classpath
-.project
-=======
-<<<<<<< HEAD
 # ========== user add===============
 # compile class files
 *.class
@@ -14,6 +6,7 @@ classes/
 gradle/
 build/
 out/
+bin/
 target/
 log/
 *.log
@@ -82,4 +75,3 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
->>>>>>> 9ef7adbfa00d3f0c7fcf2f8a7e33ebc8a0ec4765
