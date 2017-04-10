@@ -7,6 +7,8 @@ public enum PayStatus {
     WAIT,
     /** 支付成功 */
     SUCCESS,
+    /** 主动取消/关闭支付 */
+    CLOSE,
     /** 支付失败或出错 */
     FAIL;
 
