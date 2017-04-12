@@ -2,10 +2,14 @@
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns="http://www.springframework.org/schema/beans"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/context
-    http://www.springframework.org/schema/context/spring-context.xsd">
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://mybatis.org/schema/mybatis-spring
+    http://mybatis.org/schema/mybatis-spring.xsd"
+>
 
     <!-- 启动上下文的注解配置 -->
     <context:annotation-config/>
@@ -28,9 +32,12 @@
     </bean>
 
     <!-- 配置Session工厂 -->
+    <mybatis:scan base-package="com.csjbot.api.**.dao"/>
+
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="mapperLocations" value="classpath*:/com/csjbot/api/**/mapper/*.xml"/>
-        <property name="dataSource" ref="dataSource"></property>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
         <!--todo typeAliasesPackage? -->
         <!--<property name="typeAliasesPackage" value="com.csjbot.model"></property>-->
         <!--<property name="typeAliasesPackage" value="com.csjbot.model,com.csjbot.pay.model"></property>-->

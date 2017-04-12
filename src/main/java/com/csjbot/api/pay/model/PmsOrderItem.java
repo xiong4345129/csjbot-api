@@ -1,25 +1,28 @@
 package com.csjbot.api.pay.model;
 
-import java.io.Serializable;
+public class PmsOrderItem {
+    private String orderId;
 
-/**
- * @author
- */
-public class PmsOrderItem implements Serializable {
-    private final String orderId;
+    private String itemId;
 
-    private final String itemId;
-
-    private final Integer itemQty;
+    private Integer itemQty;
 
     private Integer unitPrice;
 
-    private static final long serialVersionUID = 1L;
+    public PmsOrderItem() {
+    }
 
     public PmsOrderItem(String orderId, String itemId, Integer itemQty) {
         this.orderId = orderId;
         this.itemId = itemId;
         this.itemQty = itemQty;
+    }
+
+    public PmsOrderItem(String orderId, String itemId, Integer itemQty, Integer unitPrice) {
+        this.orderId = orderId;
+        this.itemId = itemId;
+        this.itemQty = itemQty;
+        this.unitPrice = unitPrice;
     }
 
     public String getOrderId() {

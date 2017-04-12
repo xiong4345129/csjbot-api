@@ -18,14 +18,14 @@ public class ChecksumGen {
         return DatatypeConverter.printHexBinary(hashBytes);
     }
 
-    public static void dumpString(String str){
-        System.out.println("CharSet Default "+ Charset.defaultCharset());
-        dumpBytes(str.getBytes());
-        System.out.println("CharSet UTF8");
-        dumpBytes(str.getBytes(StandardCharsets.UTF_8));
-    }
-
-    public static void dumpBytes(byte[] bytes){
-        for (byte b:bytes){ System.out.print(b+" "); }
-    }
+    // public static void dumpString(String str){
+    //     System.out.println("CharSet Default "+ Charset.defaultCharset());
+    //     dumpBytes(str.getBytes());
+    //     System.out.println("CharSet UTF8");
+    //     dumpBytes(str.getBytes(StandardCharsets.UTF_8));
+    // }
+    //
+    // public static void dumpBytes(byte[] bytes){
+    //     for (byte b:bytes){ System.out.print(b+" "); }
+    // }
 }

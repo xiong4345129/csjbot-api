@@ -1,43 +1,92 @@
 package com.csjbot.api.pay.model;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
+import java.time.ZonedDateTime;
 
-/**
- * @author
- */
-public class PmsOrderPay implements Serializable {
-
-    private Date createTime;
-    private Date updateTime;
-
+public class PmsOrderPay {
+    /**
+     * 后台生成的正式订单流水号，全局唯一
+     */
     private String orderId;
-    private Date orderTime;
+
+    /**
+     * 数据库记录产生时间
+     */
+    private ZonedDateTime createTime;
+
+    /**
+     * 数据库记录更新时间
+     */
+    private ZonedDateTime updateTime;
+
+    /**
+     * 设备端顾客下单时间
+     */
+    private ZonedDateTime orderTime;
+
+    /**
+     * 设备端自建的非正式订单号
+     */
     private String orderPseudoNo;
+
+    /**
+     * 下单请求的来源设备id、在各自group中唯一
+     */
+    private String orderDeviceId;
+
+    /**
+     * 下单请求的来源设备所属类别或型号
+     */
+    private String orderDeviceGroup;
+
+    /**
+     * 订单总金额，单位为分，取整
+     */
     private Integer orderTotalFee;
+
+    /**
+     * 下单状态
+     */
     private String orderStatus;
+
+    /**
+     * 下单错误代码
+     */
     private String orderErrCode;
+
+    /**
+     * 下单错误描述
+     */
     private String orderErrDesc;
 
+    /**
+     * 提供支付服务的三方名称
+     */
     private String payService;
-    private String payMethod;
-    private String payCodeUrl;
-    private String payProductId;
+
+    /**
+     * 支付状态
+     */
     private String payStatus;
-    private Date payTimeEnd;
+
+    /**
+     * 支付错误代码
+     */
     private String payErrCode;
+
+    /**
+     * 支付错误描述
+     */
     private String payErrDesc;
 
-    private String prepayId;
+    /**
+     * 支付等待开始时间
+     */
+    private ZonedDateTime payStartTime;
 
-    private String robotUid;
-    private String robotModel;
-
-    private String orderRequest;
-    private String payRequest;
-
-    private static final long serialVersionUID = 1L;
+    /**
+     * 支付实际关闭时间
+     */
+    private ZonedDateTime payCloseTime;
 
     public PmsOrderPay() { }
 
@@ -49,19 +98,19 @@ public class PmsOrderPay implements Serializable {
         return orderId;
     }
 
-    public Date getCreateTime() {
+    public ZonedDateTime getCreateTime() {
         return createTime;
     }
 
-    public Date getUpdateTime() {
+    public ZonedDateTime getUpdateTime() {
         return updateTime;
     }
 
-    public Date getOrderTime() {
+    public ZonedDateTime getOrderTime() {
         return orderTime;
     }
 
-    public void setOrderTime(Date orderTime) {
+    public void setOrderTime(ZonedDateTime orderTime) {
         this.orderTime = orderTime;
     }
 
@@ -71,6 +120,22 @@ public class PmsOrderPay implements Serializable {
 
     public void setOrderPseudoNo(String orderPseudoNo) {
         this.orderPseudoNo = orderPseudoNo;
+    }
+
+    public String getOrderDeviceId() {
+        return orderDeviceId;
+    }
+
+    public void setOrderDeviceId(String orderDeviceId) {
+        this.orderDeviceId = orderDeviceId;
+    }
+
+    public String getOrderDeviceGroup() {
+        return orderDeviceGroup;
+    }
+
+    public void setOrderDeviceGroup(String orderDeviceGroup) {
+        this.orderDeviceGroup = orderDeviceGroup;
     }
 
     public Integer getOrderTotalFee() {
@@ -85,12 +150,8 @@ public class PmsOrderPay implements Serializable {
         return orderStatus;
     }
 
-    // public void setOrderStatus(String orderStatus) {
-    //     this.orderStatus = orderStatus;
-    // }
-
-    public void setOrderStatus(OrderStatus status) {
-        this.orderStatus = status.name();
+    public void setOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus.name(); // todo
     }
 
     public String getOrderErrCode() {
@@ -113,60 +174,16 @@ public class PmsOrderPay implements Serializable {
         return payService;
     }
 
-    public void setPayService(PayServiceProvider sp) {
-        this.payService = sp.name();
-    }
-
-    // public void setPayService(String payService) {
-    //     this.payService = payService;
-    // }
-
-    public String getPayMethod() {
-        return payMethod;
-    }
-
-    public void setPayMethod(String payMethod) {
-        this.payMethod = payMethod;
-    }
-
-    public String getPayCodeUrl() {
-        return payCodeUrl;
-    }
-
-    public void setPayCodeUrl(String payCodeUrl) {
-        this.payCodeUrl = payCodeUrl;
-    }
-
-    public String getPayProductId() {
-        return payProductId;
-    }
-
-    public void setPayProductId(String payProductId) {
-        this.payProductId = payProductId;
-    }
-
-    public String getPrepayId() {
-        return prepayId;
-    }
-
-    public void setPrepayId(String prepayId) {
-        this.prepayId = prepayId;
+    public void setPayService(PayServiceProvider payService) {
+        this.payService = payService.name();
     }
 
     public String getPayStatus() {
         return payStatus;
     }
 
-    public void setPayStatus(PayStatus status) {
-        this.payStatus = status.name();
-    }
-
-    public Date getPayTimeEnd() {
-        return payTimeEnd;
-    }
-
-    public void setPayTimeEnd(Date payTimeEnd) {
-        this.payTimeEnd = payTimeEnd;
+    public void setPayStatus(PayStatus payStatus) {
+        this.payStatus = payStatus.name();
     }
 
     public String getPayErrCode() {
@@ -185,58 +202,19 @@ public class PmsOrderPay implements Serializable {
         this.payErrDesc = payErrDesc;
     }
 
-    public String getRobotUid() {
-        return robotUid;
+    public ZonedDateTime getPayStartTime() {
+        return payStartTime;
     }
 
-    public void setRobotUid(String robotUid) {
-        this.robotUid = robotUid;
+    public void setPayStartTime(ZonedDateTime payStartTime) {
+        this.payStartTime = payStartTime;
     }
 
-    public String getRobotModel() {
-        return robotModel;
+    public ZonedDateTime getPayCloseTime() {
+        return payCloseTime;
     }
 
-    public void setRobotModel(String robotModel) {
-        this.robotModel = robotModel;
+    public void setPayCloseTime(ZonedDateTime payCloseTime) {
+        this.payCloseTime = payCloseTime;
     }
-
-
-    public String getOrderRequestText() {
-        return orderRequest;
-    }
-
-    public void setOrderRequestText(String orderRequest) {
-        this.orderRequest = orderRequest;
-    }
-
-    public String getPayRequestText() {
-        return payRequest;
-    }
-
-    public void setPayRequestText(String payRequest) {
-        this.payRequest = payRequest;
-    }
-
-    private transient List<PmsOrderItem> orderDetails;
-
-    public List<PmsOrderItem> getOrderDetails() {
-        return orderDetails;
-    }
-
-    public void setOrderDetails(List<PmsOrderItem> orderDetails) {
-        this.orderDetails = orderDetails;
-    }
-
-    // private transient Map<String, String> map;
-    //
-    // public Map<String, String> getMap() {
-    //     return map;
-    // }
-    //
-    // public void setMap(Map<String, String> map) {
-    //     this.map = map;
-    // }
-
-
 }

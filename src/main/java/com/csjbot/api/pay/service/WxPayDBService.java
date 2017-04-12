@@ -1,9 +1,13 @@
 package com.csjbot.api.pay.service;
 
-import com.csjbot.api.pay.model.WxPayCallback;
+import com.csjbot.api.pay.model.PmsPayDetailWx;
 
 public interface WxPayDBService extends OrderPayDBService {
-    int storePayResult(WxPayCallback callback);
+    int newWxPayRecord(PmsPayDetailWx record);
 
-    boolean resultExists(String orderId);
+    int updateWxPayRecord(PmsPayDetailWx record);
+
+    PmsPayDetailWx get(String orderId);
+
+    boolean wxPayRecordExists(String orderId);
 }

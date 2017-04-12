@@ -23,15 +23,6 @@
         </mvc:message-converters>
     </mvc:annotation-driven>
 
-    <!--<bean id="stringConverter"-->
-          <!--class="org.springframework.http.converter.StringHttpMessageConverter">-->
-        <!--<property name="supportedMediaTypes">-->
-            <!--<list>-->
-                <!--<value>text/plain;charset=UTF-8</value>-->
-            <!--</list>-->
-        <!--</property>-->
-    <!--</bean>-->
-
     <context:component-scan base-package="com.csjbot.api">
         <context:include-filter type="regex" expression=".*\.(controller|service)\..*"/>
         <!--<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>-->

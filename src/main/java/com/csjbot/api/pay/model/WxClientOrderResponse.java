@@ -3,17 +3,22 @@ package com.csjbot.api.pay.model;
 public class WxClientOrderResponse {
     private String id;
 
-    private final String orderStatus;
-    private final String orderPseudoNo;
+    private final OrderStatus orderStatus;
+    private String orderPseudoNo;
     private String orderId;
     private String codeUrl;
     private String errCode;
     private String errDesc;
     private String remark;
 
-    public WxClientOrderResponse(OrderStatus status, String pseudoNo) {
-        this.orderStatus = status.name();
-        this.orderPseudoNo = pseudoNo;
+    public WxClientOrderResponse(OrderStatus status) {
+        this.orderStatus = status;
+    }
+
+    public WxClientOrderResponse(OrderStatus orderStatus, String orderPseudoNo, String id) {
+        this.orderStatus = orderStatus;
+        this.orderPseudoNo = orderPseudoNo;
+        this.id = id;
     }
 
     public String getId() {
@@ -24,12 +29,16 @@ public class WxClientOrderResponse {
         this.id = id;
     }
 
-    public String getOrderStatus() {
+    public OrderStatus getOrderStatus() {
         return orderStatus;
     }
 
     public String getOrderPseudoNo() {
         return orderPseudoNo;
+    }
+
+    public void setOrderPseudoNo(String orderPseudoNo) {
+        this.orderPseudoNo = orderPseudoNo;
     }
 
     public String getOrderId() {

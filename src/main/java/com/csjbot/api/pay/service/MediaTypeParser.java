@@ -1,8 +1,14 @@
 package com.csjbot.api.pay.service;
 
+import java.util.Map;
+
 public interface MediaTypeParser {
 
-    String serialize(Object object, String type);
+    String serialize(Object object);
 
-    <T> T deserialize(String src, Class<T> tClass, String type);
+    String serialize(Object object, String rootName);
+
+    <T> T deserialize(String src, Class<T> tClass);
+
+    Map<String, String> deserializeToMap(String src);
 }

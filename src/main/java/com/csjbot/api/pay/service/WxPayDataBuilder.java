@@ -1,0 +1,167 @@
+package com.csjbot.api.pay.service;
+
+import com.csjbot.api.pay.model.WxPayDataWrapper;
+import com.csjbot.api.pay.model.*;
+import com.csjbot.api.pay.util.WxPayUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import java.time.ZonedDateTime;
+import java.util.*;
+
+import static com.csjbot.api.pay.service.WxPayParamName.*;
+import static com.csjbot.api.pay.util.WxPayUtil.*;
+
+@Service("wxDataService")
+public class WxPayDataBuilder implements WxPayDataService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WxPayDataBuilder.class);
+
+    private final String hostIp;
+    private final String callbackUrl;
+    private final String apiKey, appId, mchId;
+    private final Integer expireMin;
+    private final OrderPayDBService dbService;
+
+    @Autowired
+    public WxPayDataBuilder(WxPayConfig config,
+                            @Qualifier("wxPayDBService") OrderPayDBService dbService) {
+        System.out.println("init WxPayDataBuilder");
+        this.callbackUrl = config.getValueStrict(WxPayConfig.K_NOTIFY_URL);
+        this.hostIp = config.getServerIP();
+        this.expireMin = config.getValueAsInteger(WxPayConfig.K_EXPIRE_MIN);
+        if (dbService == null) throw new NullPointerException("dbService");
+        this.dbService = dbService;
+        Map<String, String> accMap = dbService.getAccount();
+        this.apiKey = accMap.get(K_API_KEY);
+        this.appId = accMap.get(K_APPID);
+        this.mchId = accMap.get(K_MCH_ID);
+    }
+
+    @Override
+    public boolean checkSign(Map<String, String> params) {
+        return WxPayUtil.checkSign(params, apiKey);
+    }
+
+    @Override
+    public boolean checkSign(Map<String, String> params, String sign) {
+        return WxPayUtil.checkSign(params, apiKey, sign);
+    }
+
+    @Override
+    public String computeSign(Map<String, String> params) {
+        return WxPayUtil.computeSign(params, apiKey, true);
+    }
+
+    @Override
+    public WxPayDataWrapper buildData(WxClientOrderRequest clientReq) {
+        WxPayDataWrapper res = null;
+        WxTradeType tradeType = clientReq.getData().getPayMethod();
+        if (WxTradeType.NATIVE == tradeType) {
+            res = buildQrPayData(clientReq);
+        }
+        return res;
+    }
+
+    private WxPayDataWrapper buildQrPayData(WxClientOrderRequest clientReq) {
+        final String orderId = newOrderId();
+        final WxClientOrderRequest.Data clientData = clientReq.getData();
+        final String orderPseudoNo = clientData.getOrderPseudoNo();
+        final ZonedDateTime orderTime = clientData.getOrderTime();
+        final String nonceStr = newNonceStr();
+        final List<PmsOrderItem> items = sortItems(orderId, clientData.getOrderList());
+        final Integer totalFee = sumFee(items);
+        final String productId =
+            newProductId(orderId, clientData.getOrderPseudoNo());
+        final String tradeType = WxTradeType.NATIVE.name();
+        final String body = clientData.getOrderDesc();
+        final ZonedDateTime timeStart = ZonedDateTime.now();
+        final ZonedDateTime timeExpire =
+            (expireMin == null) ? null : timeStart.plusMinutes(expireMin);
+
+        final Map<String, String> params = new TreeMap<>();
+        params.put(K_APPID, appId);
+        params.put(K_MCH_ID, mchId);
+        params.put(K_NONCE_STR, nonceStr);
+        params.put(K_BODY, body);
+        params.put(K_OUT_TRADE_NO, orderId);
+        params.put(K_TOTAL_FEE, String.valueOf(totalFee));
+        params.put(K_SPBILL_CREATE_IP, hostIp);
+        params.put(K_NOTIFY_URL, callbackUrl);
+        params.put(K_TRADE_TYPE, tradeType);
+        params.put(K_PRODUCT_ID, productId);
+        params.put(K_TIME_START, formatDateTime(timeStart));
+        params.put(K_TIME_EXPIRE, formatDateTime(timeExpire));
+        // if cound be used in callback
+        params.put(K_ATTACH, orderPseudoNo);
+
+        // remove null entries
+        params.values().removeIf(Objects::isNull);
+        // compute sign
+        final String sign = computeSign(params);
+        params.put(K_SIGN, sign);
+
+        WxPayDataWrapper data = new WxPayDataWrapper();
+        data.setOrderPayData(newOrderPay(orderId, orderTime, orderPseudoNo,
+            clientData.getRobotUid(), clientData.getRobotModel(), totalFee, timeStart));
+        data.setWxDetailData(newWxDetail(orderId, WxTradeType.NATIVE,
+            productId, totalFee, timeStart, timeExpire));
+        data.setWxParams(params);
+        data.setItems(items);
+        return data;
+    }
+
+    private PmsOrderPay newOrderPay(String orderId, ZonedDateTime orderTime, String orderPseudoNo,
+                                    String deviceId, String deviceGroup, int totalFee,
+                                    ZonedDateTime timeStart) {
+        PmsOrderPay orderPay = new PmsOrderPay(orderId);
+        orderPay.setOrderTime(orderTime);
+        orderPay.setOrderPseudoNo(orderPseudoNo);
+        orderPay.setOrderDeviceId(deviceId);
+        orderPay.setOrderDeviceGroup(deviceGroup);
+        orderPay.setOrderTotalFee(totalFee);
+        orderPay.setOrderStatus(OrderStatus.ACCEPT);
+        orderPay.setPayService(PayServiceProvider.weixin);
+        orderPay.setPayStatus(PayStatus.PRE);
+        orderPay.setPayStartTime(timeStart);
+        return orderPay;
+    }
+
+    private PmsPayDetailWx newWxDetail(String orderId, WxTradeType tradeType,
+                                       String productId, int totalFee,
+                                       ZonedDateTime timeStart, ZonedDateTime timeExpire) {
+        PmsPayDetailWx wxDetail = new PmsPayDetailWx(orderId);
+        wxDetail.setProductId(productId);
+        wxDetail.setTradeType(tradeType);
+        wxDetail.setSpbillCreateIp(hostIp);
+        wxDetail.setTotalFee(totalFee);
+        wxDetail.setTimeStart(timeStart);
+        wxDetail.setTimeExpire(timeExpire);
+        return wxDetail;
+    }
+
+    private List<PmsOrderItem> sortItems(String orderId, List<WxClientOrderItem> rawItems) {
+        final List<PmsOrderItem> pmsItems = new ArrayList<>(rawItems.size());
+        for (WxClientOrderItem rawItem : rawItems) {
+            String itemId = rawItem.getObjectId();
+            Integer unitPrice = dbService.getUnitPrice(itemId);
+            if (unitPrice != null) {
+                pmsItems.add(new PmsOrderItem(orderId, itemId, rawItem.getQty(), unitPrice));
+            } else {
+                LOGGER.error("no price defined for " + itemId);
+            }
+        }
+        return pmsItems;
+    }
+
+    private Integer sumFee(List<PmsOrderItem> details) {
+        Integer fee = 0;
+        for (PmsOrderItem d : details) {
+            fee = fee + d.getItemQty() * d.getUnitPrice();
+        }
+        return fee;
+    }
+
+}

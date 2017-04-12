@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.pay.dao.PmsOrderItemMapper">
+    <resultMap id="BaseResultMap" type="com.csjbot.api.pay.model.PmsOrderItem">
+        <id column="order_id" jdbcType="VARCHAR" property="orderId"/>
+        <result column="item_id" jdbcType="VARCHAR" property="itemId"/>
+        <result column="item_qty" jdbcType="INTEGER" property="itemQty"/>
+        <result column="unit_price" jdbcType="INTEGER" property="unitPrice"/>
+    </resultMap>
+
+    <insert id="insertList" parameterType="java.util.List">
+        INSERT INTO pms_order_item( order_id, item_id, item_qty, unit_price) VALUES
+        <foreach collection="list" item="item" index="index" open="(" separator="),(" close=")">
+            #{item.orderId}, #{item.itemId}, #{item.itemQty}, #{item.unitPrice}
+        </foreach>
+    </insert>
+</mapper>
