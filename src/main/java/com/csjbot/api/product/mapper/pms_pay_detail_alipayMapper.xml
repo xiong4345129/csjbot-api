@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.product.dao.Pms_pay_detail_alipayDAO">
+	<select id="findPayByTradeNo" resultType="com.csjbot.api.product.model.Pms_pay_detail_alipay">
+		select * from
+		pms_pay_detail_alipay where out_trade_no=#{out_trade_no}
+	</select>
+</mapper>

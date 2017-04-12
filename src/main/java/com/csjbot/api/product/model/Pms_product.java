@@ -25,7 +25,7 @@ public class Pms_product {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private String id;
 	private String name;
-	private Integer price;
+	private Double price;
 	private String memo;
 	private String unit;
 	private Integer valid;
@@ -45,10 +45,10 @@ public class Pms_product {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Integer getPrice() {
+	public Double getPrice() {
 		return price;
 	}
-	public void setPrice(Integer price) {
+	public void setPrice(Double price) {
 		this.price = price;
 	}
 	public String getMemo() {
@@ -97,7 +97,7 @@ public class Pms_product {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	public Pms_product(String id, String name, Integer price, String memo, String unit, Integer valid,
+	public Pms_product(String id, String name, Double price, String memo, String unit, Integer valid,
 			String updater_fk, String creator_fk, Timestamp date_update, Timestamp date_create) {
 		super();
 		this.id = id;

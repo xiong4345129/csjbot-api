@@ -3,6 +3,8 @@
  */
 package com.csjbot.api.product.service;
 
+import java.text.ParseException;
+
 import com.alibaba.fastjson.JSONObject;
 
 /**
@@ -12,7 +14,7 @@ import com.alibaba.fastjson.JSONObject;
  */
 public interface ProductServiceDAO {
 	//登录
-	public abstract JSONObject login(String account,String password);
+	public abstract JSONObject login(String account, String password);
 	
 	//获得产品信息
 	public abstract JSONObject getProductInfo();
@@ -24,5 +26,11 @@ public interface ProductServiceDAO {
 	public abstract JSONObject downFile(String fileName);
 	
 	//验证http头
-	public abstract boolean judegHttpHeader(String key, String time,String sign);
+	public abstract boolean judegHttpHeader(String key, String time, String sign);
+	
+	//生成订单信息
+	public abstract JSONObject addOrder(JSONObject json) throws ParseException;
+	
+	//查询订单信息
+	public abstract JSONObject showOrderInfo(String order_id);
 }
