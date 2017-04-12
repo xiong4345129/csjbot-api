@@ -14,7 +14,9 @@ import java.util.Date;
  */
 public class DateUtil {
 	/**
+	 *
 	 * 获得时间戳
+
 	 */
 	public static Timestamp getTimestramp(){
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");

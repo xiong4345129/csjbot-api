@@ -41,7 +41,7 @@ public class FaceController {
 	private FaceServiceDAO faceServiceDAO;
 
 	// 添加用户
-	@RequestMapping(value = "fac/addPerson", method = RequestMethod.POST)
+	@RequestMapping(value = "api/fac/addPerson", method = RequestMethod.POST)
 	@ResponseBody
 	public void addPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -58,7 +58,7 @@ public class FaceController {
 	}
 
 	// 添加人脸
-	@RequestMapping(value = "fac/addFace", method = RequestMethod.POST)
+	@RequestMapping(value = "api/fac/addFace", method = RequestMethod.POST)
 	@ResponseBody
 	public void addFace(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -72,14 +72,14 @@ public class FaceController {
 	}
 
 	// 获得所有组
-	@RequestMapping(value = "fac/getAllGroup", method = RequestMethod.GET)
+	@RequestMapping(value = "api/fac/getAllGroup", method = RequestMethod.GET)
 	public void getAllGroup(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
 		ResponseUtil.write(response, faceServiceDAO.findAllGroup());
 	}
 
 	// 删除人脸
-	@RequestMapping(value = "fac/deleteFace", method = RequestMethod.POST)
+	@RequestMapping(value = "api/fac/deleteFace", method = RequestMethod.POST)
 	@ResponseBody
 	public void deleteFace(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -94,7 +94,7 @@ public class FaceController {
 
 	// 删除person
 	@ResponseBody
-	@RequestMapping(value = "fac/deletePerson", method = RequestMethod.POST)
+	@RequestMapping(value = "api/fac/deletePerson", method = RequestMethod.POST)
 	public void deletePerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
 		
@@ -102,7 +102,7 @@ public class FaceController {
 	}
 
 	// 查询person信息
-	@RequestMapping(value = "fac/findPerson", method = RequestMethod.POST)
+	@RequestMapping(value = "api/fac/findPerson", method = RequestMethod.POST)
 	@ResponseBody
 	public void findPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -110,14 +110,14 @@ public class FaceController {
 	}
 
 	// 查询所有person信息
-	@RequestMapping(value = "fac/findAllPerson", method = RequestMethod.POST)
+	@RequestMapping(value = "api/fac/findAllPerson", method = RequestMethod.POST)
 	public void findAllPerson(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
 		ResponseUtil.write(response, faceServiceDAO.findAllPerson(data.get("group_id").toString()));
 	}
 
 	// 修改person的name
-	@RequestMapping(value = "fac/changePerName", method = RequestMethod.POST)
+	@RequestMapping(value = "api/fac/changePerName", method = RequestMethod.POST)
 	@ResponseBody
 	public void changePerName(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {
@@ -127,7 +127,7 @@ public class FaceController {
 	}
 
 	// 人脸检索
-	@RequestMapping(value = "fac/FaceIdentify", method = RequestMethod.POST)
+	@RequestMapping(value = "api/fac/FaceIdentify", method = RequestMethod.POST)
 	@ResponseBody
 	public void FaceIdentify(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, JSONException {

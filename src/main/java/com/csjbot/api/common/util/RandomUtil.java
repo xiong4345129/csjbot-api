@@ -1,6 +1,7 @@
 package com.csjbot.api.common.util;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -8,9 +9,9 @@ import java.util.Random;
 /**
  * @author 作者 :ZYY
  * @version 创建时间：2016年12月19日 下午2:21:43 类说明 随机生成25位密钥，用来保证用户登录状态以及权限的使用
+ * 
  */
 public class RandomUtil {
-
 
 	public RandomUtil() {
 		super();
@@ -72,6 +73,14 @@ public class RandomUtil {
 	public static Timestamp getTimeStampFor() {
 		Date date = new Date();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Timestamp time = Timestamp.valueOf(sdf.format(date));
+		return time;
+	}
+	//
+	public static Timestamp getTimeStampByStr(String str) throws ParseException{
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = sdf.parse(str);
 		Timestamp time = Timestamp.valueOf(sdf.format(date));
 		return time;
 	}
