@@ -5,60 +5,53 @@ import java.util.List;
 
 public class WxClientOrderRequest {
     private String id;
-    private Data data;
 
     public String getId() {
         return id;
     }
 
-    public Data getData() {
-        return data;
+    private String orderPseudoNo;
+    private ZonedDateTime orderTime;
+    private List<WxClientOrderItem> orderList; // todo
+    private String orderDesc;
+
+    private WxTradeType payMethod;
+
+    private String robotUid;
+    private String robotModel;
+    private String venderCode;
+    private String venderUser;
+
+    public String getOrderPseudoNo() {
+        return orderPseudoNo;
     }
 
-    public static class Data {
-        private String orderPseudoNo;
-        private ZonedDateTime orderTime;
-        private List<WxClientOrderItem> orderList; // todo
-        private String orderDesc;
+    public ZonedDateTime getOrderTime() {
+        return orderTime;
+    }
 
-        private WxTradeType payMethod;
+    public List<WxClientOrderItem> getOrderList() {
+        return orderList;
+    }
 
-        private String robotUid;
-        private String robotModel;
-        private String venderCode;
-        private String venderUser;
+    public String getOrderDesc() { return orderDesc; }
 
-        public String getOrderPseudoNo() {
-            return orderPseudoNo;
-        }
+    public WxTradeType getPayMethod() { return payMethod; }
 
-        public ZonedDateTime getOrderTime() {
-            return orderTime;
-        }
+    public String getRobotUid() {
+        return robotUid;
+    }
 
-        public List<WxClientOrderItem> getOrderList() {
-            return orderList;
-        }
+    public String getRobotModel() {
+        return robotModel;
+    }
 
-        public String getOrderDesc() { return orderDesc; }
+    public String getVenderCode() {
+        return venderCode;
+    }
 
-        public WxTradeType getPayMethod() { return payMethod; }
-
-        public String getRobotUid() {
-            return robotUid;
-        }
-
-        public String getRobotModel() {
-            return robotModel;
-        }
-
-        public String getVenderCode() {
-            return venderCode;
-        }
-
-        public String getVenderUser() {
-            return venderUser;
-        }
+    public String getVenderUser() {
+        return venderUser;
     }
 
 }

@@ -1,6 +1,5 @@
 package com.csjbot.api.pay.model;
 
-import com.csjbot.api.pay.model.ReturnStatus;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 public class WxPayCallbackResponse {

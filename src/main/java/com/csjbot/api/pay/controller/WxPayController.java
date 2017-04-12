@@ -2,7 +2,6 @@ package com.csjbot.api.pay.controller;
 
 import com.csjbot.api.pay.model.*;
 import com.csjbot.api.pay.service.*;
-import com.csjbot.api.pay.util.WxPayUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +12,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.nio.charset.Charset;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
+import static com.csjbot.api.pay.model.ReturnStatus.isSuccess;
 import static com.csjbot.api.pay.service.WxPayParamName.*;
+import static com.csjbot.api.pay.util.WxPayUtil.isValidOrderId;
+import static com.csjbot.api.pay.util.WxPayUtil.parseDateTime;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.*;
 
@@ -40,8 +42,7 @@ public class WxPayController {
     private static final String WX_XML_ROOT_NAME = "xml";
 
     // todo
-    private final URI wxUnifiedOrderUrl;
-    private final String wxUnifiedOrderUrlStr;
+    private final WxPayConfig config;
 
     private final WxPayDBService dbService;
     private final WxPayDataService dataBuilder;
@@ -57,8 +58,7 @@ public class WxPayController {
                            @Qualifier("xmlParser") MediaTypeParser xmlParser,
                            RestClient restClient) {
         System.out.println("init WxPayController");
-        wxUnifiedOrderUrl = wxPayConfig.getOrderUrl();
-        wxUnifiedOrderUrlStr = wxUnifiedOrderUrl.toString();
+        this.config = wxPayConfig;
         this.jsonParser = jsonParser;
         this.xmlParser = xmlParser;
 
@@ -77,9 +77,9 @@ public class WxPayController {
             jsonParser.deserialize(orderReqBody, WxClientOrderRequest.class);
         if (orderReq == null)
             return wrapOrderErr(BAD_REQUEST, null, "下单请求解析失败", null);
-        final String pseudoNo = orderReq.getData().getOrderPseudoNo();
+        final String pseudoNo = orderReq.getOrderPseudoNo();
         final String reqId = orderReq.getId();
-        WxPayDataWrapper wxDataWrapper = dataBuilder.buildData(orderReq);
+        WxPayDataWrapper wxDataWrapper = dataBuilder.buildPayData(orderReq);
         if (wxDataWrapper == null)
             return wrapOrderErr(BAD_REQUEST, pseudoNo, "获取下单数据失败", reqId);
         // get data ok
@@ -91,13 +91,14 @@ public class WxPayController {
 
         LOGGER.debug("orderId=" + orderId + " req xml\n" + reqXml);
         dbService.newOrderPayRecord(orderPay);
+        dbService.newWxPayRecord(wxDetail);
         dbService.insertOrderItems(wxDataWrapper.getItems());
         dbService.log(new PmsOrderPayHttpLog(orderId, OrderPayOp.NEW_ORDER,
             true, "/pay/wx/qr", orderReqBody));
         dbService.log(new PmsOrderPayHttpLog(orderId, OrderPayOp.NEW_PAY,
-            true, wxUnifiedOrderUrlStr, reqXml));
+            true, config.getOrderUrl().toString(), reqXml));
         ResponseEntity<String> wxHttpRes =
-            restClient.doPost(wxUnifiedOrderUrl, reqXml, APPLICATION_XML);
+            restClient.doPost(config.getOrderUrl(), reqXml, APPLICATION_XML);
         return handleOrderResult(wxHttpRes, orderPay, wxDetail, reqId);
     }
 
@@ -122,7 +123,7 @@ public class WxPayController {
         // check return status
         final String returnCode = wxOrderResMap.get(K_RETURN_CODE); // todo
         final String returnMsg = wxOrderResMap.get(K_RETURN_MSG);
-        if (!ReturnStatus.isSuccess(returnCode)) {
+        if (!isSuccess(returnCode)) {
             return wrapOrderErr(BAD_GATEWAY, pseudoNo,
                 returnCode, returnMsg, "请求出错", reqId);
         }
@@ -137,7 +138,7 @@ public class WxPayController {
             wxDetail.setCodeUrl(codeUrl);
             wxDetail.setPrepayId(wxOrderResMap.get(K_PREPAY_ID));
             dbService.updateOrderPayRecord(orderPay);
-            dbService.newWxPayRecord(wxDetail);
+            dbService.updateWxPayRecord(wxDetail);
             return wrapOrderOk(orderId, pseudoNo, codeUrl, reqId);
         } else {
             final String errCode = wxOrderResMap.get(K_ERR_CODE);
@@ -185,32 +186,65 @@ public class WxPayController {
     @RequestMapping(value = "/callback", method = RequestMethod.POST, consumes = TEXT_XML_VALUE)
     public ResponseEntity<String> callback(@RequestBody String callbackBody) {
         LOGGER.debug("pay callback\n" + callbackBody);
-        WxPayCallbackResponse res = new WxPayCallbackResponse(ReturnStatus.FAIL);
-        WxPayCallback payCallback = xmlParser.deserialize(callbackBody, WxPayCallback.class);
-        if (payCallback != null && ReturnStatus.isSuccess(payCallback.getReturnCode())) {
-            final String orderId = payCallback.getOutTradeNo();
-            if (WxPayUtil.isValidOrderId(orderId) && dbService.wxPayRecordExists(orderId)) {
-                PmsPayDetailWx wxDetail = dbService.get(orderId); // todo
-                if (wxDetail != null) {
-                    PmsOrderPay orderPay = new PmsOrderPay(orderId);
-                    final String result = payCallback.getResultCode();
-                    if (PayStatus.isSuccess(result)) {
-                        orderPay.setPayStatus(PayStatus.SUCCESS);
-                        orderPay.setPayCloseTime(WxPayUtil.parseDateTime(payCallback.getTimeEnd()));// todo
-                    } else {
-                        orderPay.setPayStatus(PayStatus.FAIL);
-                        orderPay.setPayErrCode(payCallback.getErrCode());
-                        orderPay.setPayErrDesc(payCallback.getErrCodeDes());
-                    }
-                    dbService.updateOrderPayRecord(orderPay);
-                    dbService.log(new PmsOrderPayHttpLog(orderId,
-                        OrderPayOp.NOTIFY_PAY_RESULT, true, "/pay/wx/callback", callbackBody));
-                }
-                res = new WxPayCallbackResponse(ReturnStatus.SUCCESS);
-            }
-        }
         // todo check sign!
-        return xmlResponse(OK, res);
+        return xmlResponse(OK, handleNotifyCallback(callbackBody));
+    }
+
+    private WxPayCallbackResponse handleNotifyCallback(String callbackBody) {
+        // only easier to use
+        final WxPayCallbackResponse failRes = new WxPayCallbackResponse(ReturnStatus.FAIL);
+        final WxPayCallbackResponse okRes = new WxPayCallbackResponse(ReturnStatus.SUCCESS);
+        // check sign
+        Map<String, String> map = xmlParser.deserializeToMap(callbackBody);
+        if (map == null || !dataBuilder.checkSign(map)) return failRes;
+        // parse data & check return status
+        WxPayCallback payCallback = xmlParser.deserialize(callbackBody, WxPayCallback.class);
+        if (payCallback == null || !isSuccess(payCallback.getReturnCode())) return failRes;
+        // check order id
+        final String orderId = payCallback.getOutTradeNo();
+        if (!(isValidOrderId(orderId) && dbService.wxPayRecordExists(orderId))) return failRes;
+        // log message
+        dbService.log(new PmsOrderPayHttpLog(orderId,
+            OrderPayOp.NOTIFY_PAY_RESULT, true, "/wx/pay/callback", callbackBody));
+        // get wx detail data
+        PmsOrderPay orderPay = dbService.getOrderPayRecord(orderId); // should exists
+        PmsPayDetailWx wxDetail = dbService.getWxPayRecord(orderId); // should exists
+        final String receivedTranId = payCallback.getTransactionId();
+        final String storedTranId = wxDetail.getTransactionId();
+        // todo check other important data
+        if (storedTranId == null) {
+            // receive first time
+            final String result = payCallback.getResultCode();
+            if (PayStatus.isSuccess(result)) {
+                final ZonedDateTime timeEnd = parseDateTime(payCallback.getTimeEnd());
+                orderPay.setPayStatus(PayStatus.SUCCESS);
+                wxDetail.setTimeEnd(timeEnd);
+                orderPay.setPayCloseTime(timeEnd); // todo use which?
+                wxDetail.setTransactionId(receivedTranId);
+                wxDetail.setOpenid(payCallback.getOpenid());
+                wxDetail.setIsSubscribe(payCallback.getIsSubscribe());
+                wxDetail.setOutTradeNo(payCallback.getOutTradeNo());
+                wxDetail.setBankType(payCallback.getBankType());
+                wxDetail.setCashFee(payCallback.getCashFee());
+                wxDetail.setCashFeeType(payCallback.getCashFeeType());
+                wxDetail.setCouponFee(payCallback.getCouponFee());
+            } else {
+                orderPay.setPayStatus(PayStatus.FAIL);
+                orderPay.setPayErrCode(payCallback.getErrCode());
+                orderPay.setPayErrDesc(payCallback.getErrCodeDes());
+            }
+            dbService.updateOrderPayRecord(orderPay);
+            dbService.updateWxPayRecord(wxDetail);
+            return okRes;
+        } else {
+            // has received before
+            if (!storedTranId.equals(receivedTranId)) {
+                // shouldn't happen!
+                LOGGER.error("TRANSACTION ID changed! orderID=" + orderId +
+                    " tranId: store=" + storedTranId + " receive=" + receivedTranId);
+            }
+            return okRes;
+        }
     }
 
     /**
@@ -218,13 +252,14 @@ public class WxPayController {
      */
     @RequestMapping(value = "/query", method = RequestMethod.GET)
     public ResponseEntity<String> query(@RequestParam("orderid") String orderId) {
+        LOGGER.debug("new query for " + orderId);
         HttpStatus status;
         WxClientQueryResponse res = new WxClientQueryResponse(orderId);
-        if (WxPayUtil.isValidOrderId(orderId)) {
+        if (isValidOrderId(orderId)) {
             PmsOrderPay orderPay = dbService.getOrderPayRecord(orderId);
             if (orderPay != null) {
                 status = OK;
-                PmsPayDetailWx wxDetail = dbService.get(orderId);
+                PmsPayDetailWx wxDetail = dbService.getWxPayRecord(orderId);
                 res.setOrderTime(orderPay.getOrderTime());
                 res.setOrderTotalFee(orderPay.getOrderTotalFee());
                 res.setPayStatus(orderPay.getPayStatus());
@@ -234,6 +269,8 @@ public class WxPayController {
                 res.setPayCashFee(wxDetail.getCashFee());
                 res.setPayCouponFee(wxDetail.getCouponFee());
                 res.setPayRefundFee(wxDetail.getRefundFee());
+                res.setWxOpenId(wxDetail.getOpenid());
+                res.setWxTransactionId(wxDetail.getTransactionId());
             } else {
                 status = NOT_FOUND;
                 res.setRemark("未找到记录");
@@ -243,6 +280,15 @@ public class WxPayController {
             res.setRemark("订单号格式不符");
         }
         return jsonResponse(status, res);
+    }
+
+    /**
+     * 关闭订单：设备->后台
+     */
+    @RequestMapping(value = "/close", method = RequestMethod.POST)
+    public ResponseEntity<String> close(@RequestBody String closeReqBody){
+        // todo
+        return null;
     }
 
     private ResponseEntity<String> jsonResponse(HttpStatus status, Object obj) {

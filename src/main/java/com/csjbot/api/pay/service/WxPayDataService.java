@@ -12,5 +12,7 @@ public interface WxPayDataService {
 
     String computeSign(Map<String, String> params);
 
-    WxPayDataWrapper buildData(WxClientOrderRequest clientReq);
+    // todo
+    WxPayDataWrapper buildPayData(WxClientOrderRequest clientReq);
+
 }

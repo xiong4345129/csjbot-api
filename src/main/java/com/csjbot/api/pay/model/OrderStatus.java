@@ -13,7 +13,7 @@ public enum OrderStatus {
      * @see PayStatus#WAIT
      */
     SUCCESS,
-    /** 主动取消下单 */
+    /** 主动关闭订单 */
     CLOSE,
     /** 下单失败或出错 */
     FAIL;

@@ -1,19 +1,23 @@
 package com.csjbot.api.pay.model;
 
 public class WxClientOrderItem {
-    private String objectId;
-    private Integer qty;
-    private String state;
+    private String itemId;
+    private Integer itemQty;
 
-    public String getObjectId() {
-        return objectId;
+    public String getItemId() {
+        return itemId;
     }
 
-    public Integer getQty() {
-        return qty;
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
     }
 
-    public String getState() {
-        return state;
+    public Integer getItemQty() {
+        return itemQty;
     }
+
+    public void setItemQty(Integer itemQty) {
+        this.itemQty = itemQty;
+    }
+
 }

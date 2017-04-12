@@ -125,29 +125,6 @@ public final class WxPayUtil {
                 .replaceAll("[^0-9]", "");
     }
 
-    public static void main(String[] args) throws IOException {
-    }
-
-    private static final String xml = "" +
-        "<xml><appid><![CDATA[wxfec1f26a067221ae]]></appid>\n" +
-        "<attach><![CDATA[201703291745-12]]></attach>\n" +
-        "<bank_type><![CDATA[CFT]]></bank_type>\n" +
-        "<cash_fee><![CDATA[1]]></cash_fee>\n" +
-        "<fee_type><![CDATA[CNY]]></fee_type>\n" +
-        "<is_subscribe><![CDATA[N]]></is_subscribe>\n" +
-        "<mch_id><![CDATA[1236388002]]></mch_id>\n" +
-        "<nonce_str><![CDATA[G9H38D738D8HBRL8CEAQBELS3IE0AZ4U]]></nonce_str>\n" +
-        "<openid><![CDATA[o-WsVt5A1Mfr-wcIa9Hv-I_bTD1A]]></openid>\n" +
-        "<out_trade_no><![CDATA[1491476-0850-000-001-549]]></out_trade_no>\n" +
-        "<result_code><![CDATA[SUCCESS]]></result_code>\n" +
-        "<return_code><![CDATA[SUCCESS]]></return_code>\n" +
-        "<sign><![CDATA[6F6F5888DD816B73CDA8DF74F362431B]]></sign>\n" +
-        "<time_end><![CDATA[20170406185656]]></time_end>\n" +
-        "<total_fee>1</total_fee>\n" +
-        "<trade_type><![CDATA[NATIVE]]></trade_type>\n" +
-        "<transaction_id><![CDATA[4000702001201704066087716755]]></transaction_id>\n" +
-        "</xml>";
-
     // public static String makeXml(Map<String, String> map) {
     //     String body = map.entrySet().stream()
     //         .filter(e -> e.getValue() != null)

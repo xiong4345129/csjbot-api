@@ -26,7 +26,7 @@ public class WxPayDBServiceImpl extends OrderPayDBServiceImpl implements WxPayDB
     }
 
     @Override
-    public PmsPayDetailWx get(String orderId) {
+    public PmsPayDetailWx getWxPayRecord(String orderId) {
         return wxPayMapper.get(orderId);
     }
 

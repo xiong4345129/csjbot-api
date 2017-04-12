@@ -56,9 +56,9 @@ public class WxPayDataBuilder implements WxPayDataService {
     }
 
     @Override
-    public WxPayDataWrapper buildData(WxClientOrderRequest clientReq) {
+    public WxPayDataWrapper buildPayData(WxClientOrderRequest clientReq) {
         WxPayDataWrapper res = null;
-        WxTradeType tradeType = clientReq.getData().getPayMethod();
+        WxTradeType tradeType = clientReq.getPayMethod();
         if (WxTradeType.NATIVE == tradeType) {
             res = buildQrPayData(clientReq);
         }
@@ -67,16 +67,15 @@ public class WxPayDataBuilder implements WxPayDataService {
 
     private WxPayDataWrapper buildQrPayData(WxClientOrderRequest clientReq) {
         final String orderId = newOrderId();
-        final WxClientOrderRequest.Data clientData = clientReq.getData();
-        final String orderPseudoNo = clientData.getOrderPseudoNo();
-        final ZonedDateTime orderTime = clientData.getOrderTime();
+        final String orderPseudoNo = clientReq.getOrderPseudoNo();
+        final ZonedDateTime orderTime = clientReq.getOrderTime();
         final String nonceStr = newNonceStr();
-        final List<PmsOrderItem> items = sortItems(orderId, clientData.getOrderList());
+        final List<PmsOrderItem> items = sortItems(orderId, clientReq.getOrderList());
         final Integer totalFee = sumFee(items);
         final String productId =
-            newProductId(orderId, clientData.getOrderPseudoNo());
+            newProductId(orderId, clientReq.getOrderPseudoNo());
         final String tradeType = WxTradeType.NATIVE.name();
-        final String body = clientData.getOrderDesc();
+        final String body = clientReq.getOrderDesc();
         final ZonedDateTime timeStart = ZonedDateTime.now();
         final ZonedDateTime timeExpire =
             (expireMin == null) ? null : timeStart.plusMinutes(expireMin);
@@ -105,7 +104,7 @@ public class WxPayDataBuilder implements WxPayDataService {
 
         WxPayDataWrapper data = new WxPayDataWrapper();
         data.setOrderPayData(newOrderPay(orderId, orderTime, orderPseudoNo,
-            clientData.getRobotUid(), clientData.getRobotModel(), totalFee, timeStart));
+            clientReq.getRobotUid(), clientReq.getRobotModel(), totalFee, timeStart));
         data.setWxDetailData(newWxDetail(orderId, WxTradeType.NATIVE,
             productId, totalFee, timeStart, timeExpire));
         data.setWxParams(params);
@@ -142,13 +141,14 @@ public class WxPayDataBuilder implements WxPayDataService {
         return wxDetail;
     }
 
+    // todo
     private List<PmsOrderItem> sortItems(String orderId, List<WxClientOrderItem> rawItems) {
         final List<PmsOrderItem> pmsItems = new ArrayList<>(rawItems.size());
         for (WxClientOrderItem rawItem : rawItems) {
-            String itemId = rawItem.getObjectId();
+            String itemId = rawItem.getItemId();
             Integer unitPrice = dbService.getUnitPrice(itemId);
             if (unitPrice != null) {
-                pmsItems.add(new PmsOrderItem(orderId, itemId, rawItem.getQty(), unitPrice));
+                pmsItems.add(new PmsOrderItem(orderId, itemId, rawItem.getItemQty(), unitPrice));
             } else {
                 LOGGER.error("no price defined for " + itemId);
             }

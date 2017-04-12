@@ -7,7 +7,7 @@ public interface WxPayDBService extends OrderPayDBService {
 
     int updateWxPayRecord(PmsPayDetailWx record);
 
-    PmsPayDetailWx get(String orderId);
+    PmsPayDetailWx getWxPayRecord(String orderId);
 
     boolean wxPayRecordExists(String orderId);
 }
