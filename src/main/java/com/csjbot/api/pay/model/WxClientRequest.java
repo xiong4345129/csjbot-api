@@ -3,13 +3,14 @@ package com.csjbot.api.pay.model;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-public class WxClientOrderRequest {
+public class WxClientRequest {
     private String id;
 
     public String getId() {
         return id;
     }
 
+    private String orderId;
     private String orderPseudoNo;
     private ZonedDateTime orderTime;
     private List<WxClientOrderItem> orderList; // todo
@@ -21,6 +22,14 @@ public class WxClientOrderRequest {
     private String robotModel;
     private String venderCode;
     private String venderUser;
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
 
     public String getOrderPseudoNo() {
         return orderPseudoNo;

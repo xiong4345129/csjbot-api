@@ -1,26 +1,24 @@
 ```json
 {
   "id": "1490854436923-ROBOabcdefg-jl3HDd",
-  "data": {
-    "orderPseudoNo": "201704051745-12",
-    "orderTime": "2017-04-05T17:51:41+08:00",
-    "orderDesc":"周黑鸭张浦店-食品",
-    "orderList": [
-      {
-        "itemId": "LJ6CE6XT7UGC3V0FSPD7OHDWODZRAHVE",
-        "itemQty": 3
-      },
-      {
-        "itemId": "TCCUQW6P0TMQGQB5ZCZS98APGVWQ9JGH",
-        "itemQty": 1
-      }
-    ],
-    "payMethod": "NATIVE",
-    "robotUid": "ROBOabcdefg",
-    "robotModel": "yingbin",
-    "venderCode": "ZHY",
-    "venderUser": "12345678901"
-  }
+  "orderPseudoNo": "201704051745-12",
+  "orderTime": "2017-04-05T17:51:41+08:00",
+  "orderDesc": "周黑鸭张浦店-食品",
+  "orderList": [
+    {
+      "itemId": "PDZTW1RC1UF82MDQQQ1HK0SSMCCAQRTC",
+      "itemQty": 1
+    },
+    {
+      "itemId": "RVNGW55KECUS3ITIEDFN6R00RP3Y4X19",
+      "itemQty": 1
+    }
+  ],
+  "payMethod": "NATIVE",
+  "robotUid": "testROBOabcdefg",
+  "robotModel": "yingbin",
+  "venderCode": "ZHY",
+  "venderUser": "12345678901"
 }
 ```
 

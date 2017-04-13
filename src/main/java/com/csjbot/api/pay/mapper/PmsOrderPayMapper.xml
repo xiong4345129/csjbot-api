@@ -17,8 +17,8 @@
         <result column="pay_status" jdbcType="VARCHAR" property="payStatus"/>
         <result column="pay_err_code" jdbcType="VARCHAR" property="payErrCode"/>
         <result column="pay_err_desc" jdbcType="VARCHAR" property="payErrDesc"/>
-        <result column="pay_start_time" jdbcType="TIMESTAMP" property="payStartTime"/>
-        <result column="pay_close_time" jdbcType="TIMESTAMP" property="payCloseTime"/>
+        <result column="close_time" jdbcType="TIMESTAMP" property="closeTime"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
     </resultMap>
 
     <sql id="Column_List">
@@ -37,8 +37,7 @@
         pay_status,
         pay_err_code,
         pay_err_desc,
-        pay_start_time,
-        pay_close_time
+        close_time
     </sql>
     <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
@@ -74,11 +73,8 @@
             <if test="payErrDesc != null">
                 pay_err_desc,
             </if>
-            <if test="payStartTime != null">
-                pay_start_time,
-            </if>
-            <if test="payCloseTime != null">
-                pay_close_time,
+            <if test="closeTime != null">
+                close_time,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -107,11 +103,8 @@
             <if test="payErrDesc != null">
                 #{payErrDesc,jdbcType=VARCHAR},
             </if>
-            <if test="payStartTime != null">
-                #{payStartTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="payCloseTime != null">
-                #{payCloseTime,jdbcType=TIMESTAMP},
+            <if test="closeTime != null">
+                #{closeTime,jdbcType=TIMESTAMP},
             </if>
         </trim>
     </insert>
@@ -139,11 +132,8 @@
             <if test="payErrDesc != null">
                 pay_err_desc = #{payErrDesc,jdbcType=VARCHAR},
             </if>
-            <if test="payStartTime != null">
-                pay_start_time = #{payStartTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="payCloseTime != null">
-                pay_close_time = #{payCloseTime,jdbcType=TIMESTAMP},
+            <if test="closeTime != null">
+                close_time = #{closeTime,jdbcType=TIMESTAMP},
             </if>
         </set>
         where order_id = #{orderId,jdbcType=VARCHAR}

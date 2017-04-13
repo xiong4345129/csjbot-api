@@ -13,12 +13,9 @@ public enum OrderStatus {
      * @see PayStatus#WAIT
      */
     SUCCESS,
-    /** 主动关闭订单 */
-    CLOSE,
-    /** 下单失败或出错 */
+    /**
+     * 下单失败或出错
+     */
     FAIL;
 
-    public static boolean isSuccess(String val) {
-        return SUCCESS.name().equals(val);
-    }
 }

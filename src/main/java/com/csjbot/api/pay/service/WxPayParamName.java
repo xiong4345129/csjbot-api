@@ -134,7 +134,9 @@ public final class WxPayParamName {
     public static final String K_TOTAL_FEE = "total_fee";
     /** 交易状态 */
     public static final String K_TRADE_STATE = "trade_state";
-    /** 交易类型 */
+    /** 交易状态描述 */
+    public static final String K_TRADE_STATE_DESC = "trade_state_desc";
+     /** 交易类型 */
     public static final String K_TRADE_TYPE = "trade_type";
     /** 微信支付订单号 */
     public static final String K_TRANSACTION_ID = "transaction_id";

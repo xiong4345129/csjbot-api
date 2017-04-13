@@ -1,5 +1,6 @@
 package com.csjbot.api.pay.model;
 
+// todo use PmsOrderItem?
 public class WxClientOrderItem {
     private String itemId;
     private Integer itemQty;

@@ -1,9 +1,6 @@
 package com.csjbot.api.pay.model;
 
-/**
- * HTTP请求结果
- */
-public enum  ReturnStatus {
+public enum ReStatus {
     SUCCESS,
     FAIL;
 

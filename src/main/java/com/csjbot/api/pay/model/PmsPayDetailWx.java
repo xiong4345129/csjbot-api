@@ -64,6 +64,11 @@ public class PmsPayDetailWx {
     private String tradeState;
 
     /**
+     * 交易状态描述
+     */
+    private String tradeStateDesc;
+
+    /**
      * 交易起始时间
      */
     private ZonedDateTime timeStart;
@@ -142,6 +147,11 @@ public class PmsPayDetailWx {
      * 是否关注公众账号
      */
     private String isSubscribe;
+
+    /**
+     * 上次向微信查询订单时间
+     */
+    private ZonedDateTime syncTime;
 
     public PmsPayDetailWx() { }
 
@@ -231,6 +241,14 @@ public class PmsPayDetailWx {
 
     public void setTradeState(String tradeState) {
         this.tradeState = tradeState;
+    }
+
+    public String getTradeStateDesc() {
+        return tradeStateDesc;
+    }
+
+    public void setTradeStateDesc(String tradeStateDesc) {
+        this.tradeStateDesc = tradeStateDesc;
     }
 
     public ZonedDateTime getTimeStart() {
@@ -359,5 +377,13 @@ public class PmsPayDetailWx {
 
     public void setIsSubscribe(String isSubscribe) {
         this.isSubscribe = isSubscribe;
+    }
+
+    public ZonedDateTime getSyncTime() {
+        return syncTime;
+    }
+
+    public void setSyncTime(ZonedDateTime syncTime) {
+        this.syncTime = syncTime;
     }
 }
