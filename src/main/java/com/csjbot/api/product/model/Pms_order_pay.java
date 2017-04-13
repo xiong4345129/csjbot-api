@@ -29,120 +29,150 @@ public class Pms_order_pay {
 	private String pay_status;
 	private String pay_err_code;
 	private String pay_err_desc;
-	private Timestamp pay_start_time;
-	private Timestamp pay_close_time;
-	
+	private String remark;
+	private Timestamp close_time;
+
 	public Timestamp getCreate_time() {
 		return create_time;
 	}
+
 	public void setCreate_time(Timestamp create_time) {
 		this.create_time = create_time;
 	}
+
 	public Timestamp getUpdate_time() {
 		return update_time;
 	}
+
 	public void setUpdate_time(Timestamp update_time) {
 		this.update_time = update_time;
 	}
+
 	public String getOrder_id() {
 		return order_id;
 	}
+
 	public void setOrder_id(String order_id) {
 		this.order_id = order_id;
 	}
+
 	public Timestamp getOrder_time() {
 		return order_time;
 	}
+
 	public void setOrder_time(Timestamp order_time) {
 		this.order_time = order_time;
 	}
+
 	public String getOrder_pseudo_no() {
 		return order_pseudo_no;
 	}
+
 	public void setOrder_pseudo_no(String order_pseudo_no) {
 		this.order_pseudo_no = order_pseudo_no;
 	}
+
 	public String getOrder_device_group() {
 		return order_device_group;
 	}
+
 	public void setOrder_device_group(String order_device_group) {
 		this.order_device_group = order_device_group;
 	}
+
 	public String getOrder_device_id() {
 		return order_device_id;
 	}
+
 	public void setOrder_device_id(String order_device_id) {
 		this.order_device_id = order_device_id;
 	}
+
 	public Integer getOrder_total_fee() {
 		return order_total_fee;
 	}
+
 	public void setOrder_total_fee(Integer order_total_fee) {
 		this.order_total_fee = order_total_fee;
 	}
+
 	public String getOrder_status() {
 		return order_status;
 	}
+
 	public void setOrder_status(String order_status) {
 		this.order_status = order_status;
 	}
+
 	public String getOrder_err_code() {
 		return order_err_code;
 	}
+
 	public void setOrder_err_code(String order_err_code) {
 		this.order_err_code = order_err_code;
 	}
+
 	public String getOrder_err_desc() {
 		return order_err_desc;
 	}
+
 	public void setOrder_err_desc(String order_err_desc) {
 		this.order_err_desc = order_err_desc;
 	}
+
 	public String getPay_service() {
 		return pay_service;
 	}
+
 	public void setPay_service(String pay_service) {
 		this.pay_service = pay_service;
 	}
+
 	public String getPay_status() {
 		return pay_status;
 	}
+
 	public void setPay_status(String pay_status) {
 		this.pay_status = pay_status;
 	}
+
 	public String getPay_err_code() {
 		return pay_err_code;
 	}
+
 	public void setPay_err_code(String pay_err_code) {
 		this.pay_err_code = pay_err_code;
 	}
+
 	public String getPay_err_desc() {
 		return pay_err_desc;
 	}
+
 	public void setPay_err_desc(String pay_err_desc) {
 		this.pay_err_desc = pay_err_desc;
 	}
-	public Timestamp getPay_start_time() {
-		return pay_start_time;
+
+	public String getRemark() {
+		return remark;
 	}
-	public void setPay_start_time(Timestamp pay_start_time) {
-		this.pay_start_time = pay_start_time;
+
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
-	public Timestamp getPay_close_time() {
-		return pay_close_time;
+
+	public Timestamp getClose_time() {
+		return close_time;
 	}
-	public void setPay_close_time(Timestamp pay_close_time) {
-		this.pay_close_time = pay_close_time;
+
+	public void setClose_time(Timestamp close_time) {
+		this.close_time = close_time;
 	}
+
 	public Pms_order_pay() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
-	public Pms_order_pay(Timestamp create_time, Timestamp update_time, String order_id, Timestamp order_time,
-			String order_pseudo_no, String order_device_group, String order_device_id, Integer order_total_fee,
-			String order_status, String order_err_code, String order_err_desc, String pay_service, String pay_status,
-			String pay_err_code, String pay_err_desc, Timestamp pay_start_time, Timestamp pay_close_time) {
-		super();
+
+	public Pms_order_pay(Timestamp create_time, Timestamp update_time, String order_id, Timestamp order_time, String order_pseudo_no, String order_device_group, String order_device_id, Integer order_total_fee, String order_status, String order_err_code, String order_err_desc, String pay_service, String pay_status, String pay_err_code, String pay_err_desc, String remark, Timestamp close_time) {
 		this.create_time = create_time;
 		this.update_time = update_time;
 		this.order_id = order_id;
@@ -158,19 +188,30 @@ public class Pms_order_pay {
 		this.pay_status = pay_status;
 		this.pay_err_code = pay_err_code;
 		this.pay_err_desc = pay_err_desc;
-		this.pay_start_time = pay_start_time;
-		this.pay_close_time = pay_close_time;
+		this.remark = remark;
+		this.close_time = close_time;
 	}
+
 	@Override
 	public String toString() {
-		return "Pms_order_pay [create_time=" + create_time + ", update_time=" + update_time + ", order_id=" + order_id
-				+ ", order_time=" + order_time + ", order_pseudo_no=" + order_pseudo_no + ", order_device_group="
-				+ order_device_group + ", order_device_id=" + order_device_id + ", order_total_fee=" + order_total_fee
-				+ ", order_status=" + order_status + ", order_err_code=" + order_err_code + ", order_err_desc="
-				+ order_err_desc + ", pay_service=" + pay_service + ", pay_status=" + pay_status + ", pay_err_code="
-				+ pay_err_code + ", pay_err_desc=" + pay_err_desc + ", pay_start_time=" + pay_start_time
-				+ ", pay_close_time=" + pay_close_time + "]";
+		return "Pms_order_pay{" +
+				"create_time=" + create_time +
+				", update_time=" + update_time +
+				", order_id='" + order_id + '\'' +
+				", order_time=" + order_time +
+				", order_pseudo_no='" + order_pseudo_no + '\'' +
+				", order_device_group='" + order_device_group + '\'' +
+				", order_device_id='" + order_device_id + '\'' +
+				", order_total_fee=" + order_total_fee +
+				", order_status='" + order_status + '\'' +
+				", order_err_code='" + order_err_code + '\'' +
+				", order_err_desc='" + order_err_desc + '\'' +
+				", pay_service='" + pay_service + '\'' +
+				", pay_status='" + pay_status + '\'' +
+				", pay_err_code='" + pay_err_code + '\'' +
+				", pay_err_desc='" + pay_err_desc + '\'' +
+				", remark='" + remark + '\'' +
+				", close_time=" + close_time +
+				'}';
 	}
-	
-	
 }

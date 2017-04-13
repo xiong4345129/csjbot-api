@@ -215,23 +215,23 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 		Double price = 0.00;
 		String subject = "";
 
-		JSONObject data = json.getJSONObject("data");
+		//JSONObject data = json.getJSONObject("data");
 		Pms_order_pay pms_order_pay = new Pms_order_pay();
 		pms_order_pay.setOrder_id(order_id);
 		pms_order_pay.setCreate_time(RandomUtil.getTimeStampFor());
 		pms_order_pay.setUpdate_time(RandomUtil.getTimeStampFor());
-		pms_order_pay.setOrder_time(RandomUtil.getTimeStampByStr(data.getString("orderTime")));
+		pms_order_pay.setOrder_time(RandomUtil.getTimeStampByStr(json.getString("orderTime").replace("T"," ")));
 		pms_order_pay.setOrder_status("wait");
 		pms_order_pay.setPay_service("alipay");
 		pms_order_pay.setPay_status("doing");
-		pms_order_pay.setOrder_device_group(data.getString("robotModel"));
-		pms_order_pay.setOrder_device_id(data.getString("robotUid"));
-		pms_order_pay.setOrder_pseudo_no(data.getString("orderPseudoNo"));
+		pms_order_pay.setOrder_device_group(json.getString("robotModel"));
+		pms_order_pay.setOrder_device_id(json.getString("robotUid"));
+		pms_order_pay.setOrder_pseudo_no(json.getString("orderPseudoNo"));
 
 		int n = pms_order_payDAO.insert(pms_order_pay);
 		if (n == 1) {
 			Pms_order_item pms_order_detail;
-			JSONArray jsonArray = data.getJSONArray("orderList");
+			JSONArray jsonArray = json.getJSONArray("orderList");
 			for (Object object : jsonArray) {
 				JSONObject jsonObject = (JSONObject) JSONObject.toJSON(object);
 				pms_order_detail = new Pms_order_item();
@@ -265,23 +265,21 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 				e.printStackTrace();
 			}
 			backJson.put("id", "");
-			backJson.put("status", "SUCCESS");
-			backData.put("orderPseudoNo", data.getString("orderPseudoNo"));
+			backJson.put("orderStatus", "SUCCESS");
+			backData.put("orderPseudoNo", json.getString("orderPseudoNo"));
 			backData.put("orderId", order_id);
 			backData.put("codeUrl", orderUrl);
 			backData.put("code", 200);
-			backJson.put("data", backData);
 
 		} else {
 			backJson.put("id", "");
-			backJson.put("status", "SUCCESS");
+			backJson.put("orderStatus", "SUCCESS");
 			backData.put("orderPseudoNo", "");
 			backData.put("codeUrl", "");
 			backData.put("code", 404);
-			backJson.put("error", backData);
 
 		}
-		return backJson;
+		return backData;
 	}
 
 	// 根据order_id查询订单信息
