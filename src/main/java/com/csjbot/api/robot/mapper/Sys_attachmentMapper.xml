@@ -7,4 +7,7 @@
     <select id="getSystByName" resultType="com.csjbot.api.robot.model.Sys_attachment">
           select * from sys_attachment where alias_name=#{fileName}
     </select>
+    <select id="getSystByType" resultType="com.csjbot.api.robot.model.Sys_attachment">
+        select * from sys_attachment where transaction_type=#{type}
+    </select>
 </mapper>

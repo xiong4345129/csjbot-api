@@ -60,6 +60,9 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 	@Autowired
 	private Pms_pay_detail_alipayDAO pay_detail_alipayDAO;
 
+	@Autowired
+	private Pms_pay_alipay_urlDAO pms_pay_alipay_urlDAO;
+
 	private JsonUtil sucJson = new JsonUtil("200", "ok", null);
 	private JsonUtil falJson = new JsonUtil("500", "", null);
 
@@ -208,7 +211,6 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 	// 生成订单信息
 	@Override
 	public JSONObject addOrder(JSONObject json) throws ParseException {
-		JSONObject backJson = new JSONObject();
 		JSONObject backData = new JSONObject();
 
 		String order_id = OrderIdGen.next(); // 订单号
@@ -221,9 +223,9 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 		pms_order_pay.setCreate_time(RandomUtil.getTimeStampFor());
 		pms_order_pay.setUpdate_time(RandomUtil.getTimeStampFor());
 		pms_order_pay.setOrder_time(RandomUtil.getTimeStampByStr(json.getString("orderTime").replace("T"," ")));
-		pms_order_pay.setOrder_status("wait");
+		pms_order_pay.setOrder_status("success");
 		pms_order_pay.setPay_service("alipay");
-		pms_order_pay.setPay_status("doing");
+		pms_order_pay.setPay_status("wait");
 		pms_order_pay.setOrder_device_group(json.getString("robotModel"));
 		pms_order_pay.setOrder_device_id(json.getString("robotUid"));
 		pms_order_pay.setOrder_pseudo_no(json.getString("orderPseudoNo"));
@@ -251,29 +253,39 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 			}
 			// 获取订单支付链接
 			String orderUrl = "";
+			String redirectUrl= "";
 			try {
 				JSONObject param = new JSONObject();
 				param.put("out_trade_no", order_id);
 				param.put("total_amount", (double)price/100);
 				param.put("subject", subject);
-				param.put("body", "");
+				param.put("timeout_express","30m");   //30分钟后超时
+
 				orderUrl = AlipayServicePort.addOrder(param);
+				//添加跳转链接
+				Pms_pay_alipay_url pau = new Pms_pay_alipay_url();
+				String redirect_key = RandomUtil.generateString(32);
+				pau.setRedirect_key(redirect_key);
+				pau.setCreat_time(RandomUtil.getTimeStampFor());
+				pau.setUrl(orderUrl);
+				pms_pay_alipay_urlDAO.insert(pau);
+				redirectUrl = "http://192.168.1.115:8080/api/pdt/redirectPay?key="+redirect_key;
 
 			} catch (AlipayApiException e) {
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
-			backJson.put("id", "");
-			backJson.put("orderStatus", "SUCCESS");
+			backData.put("id", "");
+			backData.put("orderStatus", "SUCCESS");
 			backData.put("orderPseudoNo", json.getString("orderPseudoNo"));
 			backData.put("orderId", order_id);
-			backData.put("codeUrl", orderUrl);
+			backData.put("codeUrl", redirectUrl);
 			backData.put("code", 200);
 
 		} else {
-			backJson.put("id", "");
-			backJson.put("orderStatus", "SUCCESS");
+			backData.put("id", "");
+			backData.put("orderStatus", "SUCCESS");
 			backData.put("orderPseudoNo", "");
 			backData.put("codeUrl", "");
 			backData.put("code", 404);
@@ -298,9 +310,8 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 		Pms_order_pay pay = pms_order_payDAO.findPayByOrderId(order_id);
 		if (pay != null) {
 			JSONObject alipay_trade_query_response = result.getJSONObject("alipay_trade_query_response");
-			String status = pay.getOrder_status();
 			if (alipay_trade_query_response != null) {
-				status = alipay_trade_query_response.getString("trade_status");
+				String status = alipay_trade_query_response.getString("trade_status");
 				pay.setOrder_status(status);
 				pms_order_payDAO.updateByPrimaryKey(pay);
 
@@ -325,24 +336,82 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 					pay_detail_alipayDAO.insert(ppdy);
 
 				} else {
+					ppdy.setBuyer_logon_id(alipay_trade_query_response.getString("buyer_logon_id"));
+					ppdy.setBuyer_pay_amount(alipay_trade_query_response.getString("buyer_pay_amount"));
+					ppdy.setBuyer_user_id(alipay_trade_query_response.getString("buyer_user_id"));
+					ppdy.setCode(alipay_trade_query_response.getString("code"));
+					ppdy.setInvoice_amount(alipay_trade_query_response.getString("invoice_amount"));
 					ppdy.setMsg(alipay_trade_query_response.getString("msg"));
+					ppdy.setOpen_id(alipay_trade_query_response.getString("open_id"));
+					ppdy.setOut_trade_no(alipay_trade_query_response.getString("out_trade_no"));
+					ppdy.setPoint_amount(alipay_trade_query_response.getString("point_amount"));
+					ppdy.setReceipt_amount(alipay_trade_query_response.getString("receipt_amount"));
+					ppdy.setSend_pay_date(alipay_trade_query_response.getString("send_pay_date"));
+					ppdy.setSign(result.getString("sign"));
+					ppdy.setTotal_amount(alipay_trade_query_response.getString("total_amount"));
+					ppdy.setTrade_no(alipay_trade_query_response.getString("trade_no"));
+					ppdy.setTrade_status(alipay_trade_query_response.getString("trade_status"));
 					pay_detail_alipayDAO.updateByPrimaryKey(ppdy);
 				}
-				data.put("orderId", order_id);
-				data.put("orderTime", pay.getOrder_time().toString());
-				data.put("payTimeEnd", alipay_trade_query_response.getString("send_pay_date"));
-				data.put("status", alipay_trade_query_response.getString("msg"));
-				data.put("remark", "");
+				String[] sta = {"WAIT","SUCCESS","FAIL"};
+				String payStatus ;
+				if (alipay_trade_query_response.getString("trade_status") != null){
+					switch (alipay_trade_query_response.getString("trade_status")){
+						case "WAIT_BUYER_PAY":
+							payStatus = sta[0];
+							break;
+						case "TRADE_SUCCESS":
+							payStatus = sta[1];
+							break;
+						default:
+							payStatus = sta[2];
+							break;
+					}
+					data.put("orderId", order_id);
+					data.put("orderTime", pay.getOrder_time().toString());
+					data.put("orderTotalFee",alipay_trade_query_response.getString("total_amount"));
+					data.put("payStatus",payStatus);
+					data.put("payTimeStart",pay.getOrder_time().toString());
+					data.put("payTimeExpire","");
+					data.put("payTimeEnd",alipay_trade_query_response.getString("send_pay_date"));
+					data.put("payCashFee",alipay_trade_query_response.getString("total_amount"));
+					data.put("payCouponFee",alipay_trade_query_response.getString("point_amount"));
+					data.put("payRefundFee", 0.00);
+					data.put("wxOpenId",alipay_trade_query_response.getString("open_id") );
+					data.put("wxTransactionId",alipay_trade_query_response.getString("trade_no") );
+					data.put("remark", "");
+				}else {
+					data.put("orderId", order_id);
+					data.put("payStatus","WAIT");
+				}
 			}
 
 		} else {
 			data.put("orderId", order_id);
-			data.put("orderTime", "");
-			data.put("payTimeEnd", "");
-			data.put("status", "");
+			data.put("orderTime","");
+			data.put("orderTotalFee","");
+			data.put("payStatus","WAIT");
+			data.put("payTimeStart","");
+			data.put("payTimeExpire","");
+			data.put("payTimeEnd","");
+			data.put("payCashFee","");
+			data.put("payCouponFee","");
+			data.put("payRefundFee", 0.00);
+			data.put("wxOpenId","");
+			data.put("wxTransactionId","" );
 			data.put("remark", "");
 		}
 		return data;
+	}
+
+	@Override
+	public String findRedirectUrl(String key) {
+		String url = "";
+		Pms_pay_alipay_url pms_pay_alipay_url = pms_pay_alipay_urlDAO.findPAUByKey(key);
+		if (pms_pay_alipay_url != null){
+			url = pms_pay_alipay_url.getUrl().toString();
+		}
+		return url;
 	}
 
 }

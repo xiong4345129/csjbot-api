@@ -33,4 +33,7 @@ public interface ProductServiceDAO {
 	
 	//查询订单信息
 	public abstract JSONObject showOrderInfo(String order_id);
+
+	//根据key查询跳转支付路径
+	public abstract  String findRedirectUrl(String key);
 }
