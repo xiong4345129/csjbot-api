@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
 import java.util.AbstractMap;
@@ -21,7 +22,6 @@ import java.util.Map;
 
 import static com.csjbot.api.pay.model.ReStatus.isSuccess;
 import static com.csjbot.api.pay.service.WxPayParamName.*;
-import static com.csjbot.api.pay.util.WxPayUtil.*;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.*;
 
@@ -72,6 +72,10 @@ public class WxPayController {
         return xmlParser.serialize(params, "xml");
     }
 
+    private ResponseEntity<String> sendWxPost(URI url, String reqXml) {
+        return restClient.doPost(url, reqXml, APPLICATION_XML);
+    }
+
     /**
      * 二维码支付下单请求：设备->后台
      */
@@ -82,9 +86,12 @@ public class WxPayController {
             jsonParser.deserialize(orderReqBody, WxClientRequest.class);
         if (orderReq == null)
             return clientErrResponse(BAD_REQUEST, "JSON解析失败");
-        final String pseudoNo = orderReq.getOrderPseudoNo();
         final String reqId = orderReq.getId();
-        WxPayDataWrapper wxDataWrapper = dataBuilder.buildData(orderReq, OrderPayOp.NEW_ORDER);
+        final String pseudoNo = orderReq.getOrderPseudoNo();
+        final String deviceId = orderReq.getRobotUid();
+        if (dbService.orderPayRecordExists(pseudoNo, deviceId))
+            return clientErrResponse(BAD_REQUEST, pseudoNo, null, "pseudoNo已使用", reqId);
+        WxPayDataWrapper wxDataWrapper = dataBuilder.buildOrderData(orderReq);
         if (wxDataWrapper.isEmpty())
             return clientErrResponse(BAD_REQUEST, pseudoNo, OrderStatus.FAIL,
                 "获取下单数据失败", reqId);
@@ -100,11 +107,10 @@ public class WxPayController {
         dbService.newWxPayRecord(wxDetail);
         dbService.insertOrderItems(wxDataWrapper.getItems());
         dbService.log(new PmsOrderPayHttpLog(orderId, OrderPayOp.NEW_ORDER,
-            true, "/pay/wx/qr", orderReqBody));
+            true, "/pay/wx/order", orderReqBody));
         dbService.log(new PmsOrderPayHttpLog(orderId, OrderPayOp.NEW_PAY,
             true, config.getOrderUrl().toString(), reqXml));
-        ResponseEntity<String> wxHttpRes =
-            restClient.doPost(config.getOrderUrl(), reqXml, APPLICATION_XML);
+        ResponseEntity<String> wxHttpRes = sendWxPost(config.getOrderUrl(), reqXml);
         return handleOrderResult(wxHttpRes, orderPay, wxDetail, reqId);
     }
 
@@ -131,6 +137,7 @@ public class WxPayController {
             orderPay.setOrderErrCode(returnCode);
             orderPay.setOrderErrDesc(returnMsg);
             orderPay.setCloseTime(ZonedDateTime.now());
+            orderPay.setClosed(true);
             dbService.updateOrderPayRecord(orderPay);
             return clientErrResponse(BAD_GATEWAY, null, pseudoNo, OrderStatus.FAIL, null,
                 returnCode, returnMsg, "请求微信出错", reqId);
@@ -157,6 +164,7 @@ public class WxPayController {
             orderPay.setOrderErrCode(errCode);
             orderPay.setOrderErrDesc(errDesc);
             orderPay.setCloseTime(ZonedDateTime.now());
+            orderPay.setClosed(true);
             dbService.updateOrderPayRecord(orderPay);
             return clientErrResponse(FORBIDDEN, orderId, pseudoNo,
                 orderPay.getOrderStatus(), orderPay.getPayStatus(),
@@ -187,53 +195,50 @@ public class WxPayController {
             return failRes;
         // check order id
         final String recOrderId = callbackMap.get(K_OUT_TRADE_NO);
-        if (!(isValidOrderId(recOrderId) && dbService.wxPayRecordExists(recOrderId)))
+        if (!(WxPayUtil.isValidOrderId(recOrderId) && dbService.wxPayRecordExists(recOrderId)))
             return failRes;
+        // get wx detail data
+        PmsOrderPay orderPay = dbService.getOrderPayRecord(recOrderId); // should exists
+        if (orderPay.isClosed() && PayStatus.SUCCESS == orderPay.getPayStatus())
+            return okRes;  // if order is success & closed, do not update again
         // log message
         dbService.log(new PmsOrderPayHttpLog(recOrderId,
             OrderPayOp.NOTIFY_PAY_RESULT, true, "/wx/pay/callback", callbackBody));
-        // get wx detail data
-        PmsOrderPay orderPay = dbService.getOrderPayRecord(recOrderId); // should exists
+        // update
         PmsPayDetailWx wxDetail = dbService.getWxPayRecord(recOrderId); // should exists
         final String receivedTranId = callbackMap.get(K_TRANSACTION_ID);
         final String storedTranId = wxDetail.getTransactionId();
         final PayStatus storedPayStatus = orderPay.getPayStatus();
         // todo check other important data
-        if (storedTranId == null || PayStatus.SUCCESS != storedPayStatus) {
-            // receive first time
-            final String result = callbackMap.get(K_RESULT_CODE);
-            if (PayStatus.isSuccess(result)) {
-                orderPay.setPayStatus(PayStatus.SUCCESS);
-                wxDetail.setTransactionId(receivedTranId);
-                wxDetail.setOutTradeNo(recOrderId);
-                fillPayResultData(wxDetail, callbackMap);
-            } else {
-                if (storedPayStatus != null) {
-                    LOGGER.info("overide pay status of " + recOrderId +
-                        " from " + storedPayStatus + " to Fail");
-                }
-                orderPay.setPayStatus(PayStatus.FAIL);
-                orderPay.setPayErrCode(callbackMap.get(K_ERR_CODE));
-                orderPay.setPayErrDesc(callbackMap.get(K_ERR_CODE_DES));
-            }
-            if (orderPay.getCloseTime() != null)
-                LOGGER.info("override pay close time " + orderPay.getCloseTime() + " to now");
-            orderPay.setCloseTime(ZonedDateTime.now());
-            dbService.updateOrderPayRecord(orderPay);
-            dbService.updateWxPayRecord(wxDetail);
-        } else {
-            // has received before
-            if (storedTranId != null && !storedTranId.equals(receivedTranId)) {
-                // shouldn't happen!
-                LOGGER.error("TRANSACTION ID changed! orderID=" + recOrderId +
-                    " tranId: store=" + storedTranId + " receive=" + receivedTranId);
-            }
+        if (storedTranId != null) {
+            // shouldn't happen!
+            LOGGER.error("TRANSACTION ID not null! orderID=" + recOrderId +
+                " tranId: stored=" + storedTranId + " received=" + receivedTranId);
         }
+        // receive first time
+        final String result = callbackMap.get(K_RESULT_CODE);
+        if (PayStatus.isSuccess(result)) {
+            orderPay.setPayStatus(PayStatus.SUCCESS);
+            wxDetail.setTransactionId(receivedTranId);
+            wxDetail.setOutTradeNo(recOrderId);
+            fillPayResultData(wxDetail, callbackMap);
+        } else {
+            // seems not happen, wx does not send FAIL notifications
+            LOGGER.info("receive result=FAIL callback for order " + recOrderId);
+            orderPay.setPayStatus(PayStatus.FAIL);
+            orderPay.setPayErrCode(callbackMap.get(K_ERR_CODE));
+            orderPay.setPayErrDesc(callbackMap.get(K_ERR_CODE_DES));
+        }
+        orderPay.setCloseTime(ZonedDateTime.now());
+        orderPay.setClosed(true);
+        dbService.updateOrderPayRecord(orderPay);
+        dbService.updateWxPayRecord(wxDetail);
         return okRes;
     }
 
     private void fillPayResultData(PmsPayDetailWx wxDetail, Map<String, String> resMap) {
-        wxDetail.setTimeEnd(parseDateTime(resMap.get(K_TIME_END)));
+        wxDetail.setOutTradeNo(resMap.get(K_OUT_TRADE_NO));
+        wxDetail.setTimeEnd(WxPayUtil.parseDateTime(resMap.get(K_TIME_END)));
 
         wxDetail.setOpenid(resMap.get(K_OPENID));
         wxDetail.setIsSubscribe(resMap.get(K_IS_SUBSCRIBE));
@@ -259,13 +264,13 @@ public class WxPayController {
     public ResponseEntity<String> query(@RequestParam("orderid") String orderId) {
         LOGGER.debug("new query for " + orderId);
         WxClientResponse res = new WxClientResponse(orderId);
-        if (isValidOrderId(orderId)) {
+        if (WxPayUtil.isValidOrderId(orderId)) {
             PmsOrderPay orderPay = dbService.getOrderPayRecord(orderId);
             if (orderPay != null) {
                 final PmsPayDetailWx wxDetail = dbService.getWxPayRecord(orderId);
                 final OrderStatus orderStatus = orderPay.getOrderStatus();
-                if (shouldSyncRemote(orderPay, wxDetail))
-                    syncRemote(orderPay, wxDetail); // todo
+                if (!orderPay.isClosed() && isSyncTimeSuitable(wxDetail))
+                    syncRemote(orderPay, wxDetail); // todo, temp use here, change to threadpool later
                 res.setOrderTime(orderPay.getOrderTime());
                 res.setCloseTime(orderPay.getCloseTime());
                 res.setOrderTotalFee(orderPay.getOrderTotalFee());
@@ -290,73 +295,91 @@ public class WxPayController {
         }
     }
 
-    private boolean shouldSyncRemote(PmsOrderPay orderPay, PmsPayDetailWx wxDetail) {
-        if (orderPay.getCloseTime() == null) {
-            final ZonedDateTime lastSync = wxDetail.getSyncTime();
-            final ZonedDateTime now = ZonedDateTime.now();
-            LOGGER.debug("" + minutesBetween(wxDetail.getTimeStart(), now));
-
-            return (lastSync == null && minutesBetween(wxDetail.getTimeStart(), now) > WxPayConfig.MIN_MINUTES) ||
-                (lastSync != null && minutesBetween(lastSync, now) > config.getSyncMinutes());
+    private boolean isSyncTimeSuitable(PmsPayDetailWx wxDetail) {
+        final ZonedDateTime lastSync = wxDetail.getSyncTime();
+        final ZonedDateTime now = ZonedDateTime.now();
+        LOGGER.debug("minutes since create order: " + WxPayUtil.minutesBetween(wxDetail.getTimeStart(), now));
+        if (lastSync == null) {
+            return WxPayUtil.minutesBetween(wxDetail.getTimeStart(), now) > WxPayConfig.MIN_MINUTES;
+        } else {
+            return WxPayUtil.minutesBetween(lastSync, now) > config.getSyncMinutes();
         }
-        return false;
     }
 
-    // todo schedule this?
-    private void syncRemote(PmsOrderPay orderPay, PmsPayDetailWx wxDetail) {
-        assert orderPay != null && wxDetail != null;
+    // todo schedule this
+    private boolean syncRemote(PmsOrderPay orderPay, PmsPayDetailWx wxDetail) {
+        if (orderPay.isClosed()) return false; // todo if closed, don't check again
         final String orderId = orderPay.getOrderId();
         final String wxTranId = wxDetail.getTransactionId();
-        AbstractMap.SimpleEntry<String, String> reqId;
+        AbstractMap.SimpleEntry<String, String> reqIdPair;
         if (wxTranId != null) {
-            reqId = new AbstractMap.SimpleEntry<>(K_TRANSACTION_ID, wxTranId);
+            reqIdPair = new AbstractMap.SimpleEntry<>(K_TRANSACTION_ID, wxTranId);
         } else {
-            reqId = new AbstractMap.SimpleEntry<>(K_OUT_TRADE_NO, orderId);
+            reqIdPair = new AbstractMap.SimpleEntry<>(K_OUT_TRADE_NO, orderId);
         }
-        WxPayDataWrapper wrapper = dataBuilder.buildData(reqId, OrderPayOp.QUERY_PAY);
+        WxPayDataWrapper wrapper = dataBuilder.buildQueryData(reqIdPair);
         if (!wrapper.isEmpty()) {
             String reqXml = serializeWxXml(wrapper.getWxParams());
             dbService.log(new PmsOrderPayHttpLog(orderId, OrderPayOp.QUERY_PAY,
                 true, config.getQueryUrl().toString(), reqXml));
-            ResponseEntity<String> wxHttpRes =
-                restClient.doPost(config.getQueryUrl(), reqXml, APPLICATION_XML);
+            final ZonedDateTime syncTime = ZonedDateTime.now();
+            ResponseEntity<String> wxHttpRes = sendWxPost(config.getQueryUrl(), reqXml);
             final String resBody = wxHttpRes.getBody();
+            if (resBody == null) {
+                LOGGER.error("empty wx query result for order " + orderId);
+                return false;
+            }
+            LOGGER.debug("new wx query result for order " + orderId + " " + resBody);
             dbService.log(new PmsOrderPayHttpLog(orderId,
                 OrderPayOp.QUERY_PAY, false, config.getQueryUrl().toString(), resBody));
             Map<String, String> wxQueryResMap = xmlParser.deserializeToMap(wxHttpRes.getBody());
-            if (wxQueryResMap != null && isSuccess(wxQueryResMap.get(K_RETURN_CODE))) {
-                final String resultCode = wxQueryResMap.get(K_RESULT_CODE);
-                final String tradeState = wxQueryResMap.get(K_TRADE_STATE);
-                final String tradeStateDesc = wxQueryResMap.get(K_TRADE_STATE_DESC);
-                if (isSuccess(resultCode)) {
-                    ZonedDateTime now = ZonedDateTime.now();
-                    wxDetail.setSyncTime(now);
-                    wxDetail.setTradeState(tradeState);
-                    wxDetail.setTradeStateDesc(tradeStateDesc);
-                    PayStatus newPayStatus= null;
-                    if (isSuccess(tradeState)) {
-                        fillPayResultData(wxDetail, wxQueryResMap);
-                        newPayStatus = PayStatus.SUCCESS;
-                    }else {
-                        if(WxPayUtil.isLater(now, wxDetail.getTimeExpire())) {
-                            newPayStatus = PayStatus.EXPIRE;
-                        }
-                    }
-                    if (orderPay.getCloseTime() == null && newPayStatus != null) {
-                        orderPay.setPayStatus(newPayStatus);
-                        orderPay.setCloseTime(now);
-                        orderPay.setRemark(orderPay.getRemark() +
-                            "\n" + now.toString() + "] update pay_status to "+newPayStatus+" by query");
-                        dbService.updateOrderPayRecord(orderPay);
-                    }
-                    dbService.updateWxPayRecord(wxDetail);
-                }
-                LOGGER.info("query wx for order " + orderId + " resultCode=" + resultCode +
-                    " tradeState=" + tradeState + " tradeStateDesc=" + tradeStateDesc);
-            } else {
-                LOGGER.error("query wx for order " + orderId + " error or return FAIL ");
+            if (wxQueryResMap == null || !dataBuilder.checkSign(wxQueryResMap)
+                || !isSuccess(wxQueryResMap.get(K_RETURN_CODE))) {
+                LOGGER.error("query wx for order " + orderId + " return error or fail");
+                return false;
+            }
+            final String resultCode = wxQueryResMap.get(K_RESULT_CODE);
+            final String tradeState = wxQueryResMap.get(K_TRADE_STATE);
+            final String tradeStateDesc = wxQueryResMap.get(K_TRADE_STATE_DESC);
+            LOGGER.info("query wx for order " + orderId + " resultCode=" + resultCode +
+                " tradeState=" + tradeState + " tradeStateDesc=" + tradeStateDesc);
+            if (!isSuccess(resultCode) || tradeState == null) return false;
+            wxDetail.setSyncTime(syncTime);
+            wxDetail.setTradeState(tradeState);
+            wxDetail.setTradeStateDesc(tradeStateDesc);
+            PayStatus newPayStatus = null;
+            TradeState state = TradeState.valueOf(tradeState);
+            switch (state) {
+                case SUCCESS:
+                    fillPayResultData(wxDetail, wxQueryResMap); // store data
+                    newPayStatus = PayStatus.SUCCESS;
+                    break;
+                case NOTPAY:
+                    if (WxPayUtil.isLater(syncTime, wxDetail.getTimeExpire()))
+                        newPayStatus = PayStatus.EXPIRE;
+                    break;
+                case CLOSED:
+                    newPayStatus = PayStatus.CLOSE;
+                    break;
+                case PAYERROR:
+                    newPayStatus = PayStatus.FAIL;
+                    break;
+                default: // todo not handle
+            }
+            // update wx detail
+            dbService.updateWxPayRecord(wxDetail);
+            // update orderpay if ok
+            if (newPayStatus != null) {
+                orderPay.setPayStatus(newPayStatus);
+                orderPay.setCloseTime(ZonedDateTime.now());
+                orderPay.setClosed(true);
+                orderPay.setRemark(orderPay.getRemark() +
+                    "\n" + orderPay.getCloseTime().toString() +
+                    "] update pay_status to " + newPayStatus + " by query");
+                dbService.updateOrderPayRecord(orderPay);
             }
         }
+        return true;
     }
 
     /**
@@ -371,26 +394,27 @@ public class WxPayController {
         final String orderId = clientReq.getOrderId();
         final String robotUid = clientReq.getRobotUid();
         final String robotModel = clientReq.getRobotModel();
-        if (orderId == null || robotUid == null || robotModel == null || !isValidOrderId(orderId))
+        if (orderId == null || robotUid == null || robotModel == null || !WxPayUtil.isValidOrderId(orderId))
             return clientErrResponse(BAD_REQUEST, "参数校验错误");
         PmsOrderPay orderPay = dbService.getOrderPayRecord(orderId);
         if (orderPay == null)
             return clientErrResponse(NOT_FOUND, "未找到订单" + orderId);
         if (!(robotUid.equals(orderPay.getOrderDeviceId()) && robotModel.equals(orderPay.getOrderDeviceGroup())))
             return clientErrResponse(FORBIDDEN, "关闭订单只能由同一设备发起"); // todo need?
-        if (orderPay.getCloseTime() != null)
+        if (orderPay.isClosed())
             return clientErrResponse(FORBIDDEN, orderId, null,
                 orderPay.getOrderStatus(), orderPay.getPayStatus(),
                 "订单" + orderId + "已关闭", clientReq.getId());
-        final WxPayDataWrapper dataWrapper = dataBuilder.buildData(clientReq, OrderPayOp.CLOSE_ORDER);
+        if (WxPayUtil.minutesBetween(orderPay.getCreateTime(), ZonedDateTime.now()) <= WxPayConfig.MIN_MINUTES + 1) // allow 1 more min
+            return clientErrResponse(FORBIDDEN, orderId, "申请关闭订单时间过短", clientReq.getId());
+        final WxPayDataWrapper dataWrapper = dataBuilder.buildCloseData(clientReq);
         final Map<String, String> params = dataWrapper.getWxParams();
         final String reqXml = serializeWxXml(params);
         dbService.log(new PmsOrderPayHttpLog(orderId, OrderPayOp.CLOSE_ORDER,
             true, "/pay/wx/close", closeReqBody));
         dbService.log(new PmsOrderPayHttpLog(orderId, OrderPayOp.CLOSE_PAY,
             true, config.getCloseUrl().toString(), reqXml));
-        ResponseEntity<String> wxHttpRes =
-            restClient.doPost(config.getOrderUrl(), reqXml, APPLICATION_XML);
+        ResponseEntity<String> wxHttpRes = sendWxPost(config.getCloseUrl(), reqXml);
         return handleCloseResult(wxHttpRes, orderPay, clientReq.getId());
     }
 
@@ -398,32 +422,36 @@ public class WxPayController {
                                                      PmsOrderPay orderPay, String reqId) {
         final String orderId = orderPay.getOrderId();
         final OrderStatus orderStatus = orderPay.getOrderStatus();
+        final PayStatus storedPayStatus = orderPay.getPayStatus();
         final String wxCloseResBody = wxHttpRes.getBody();
         LOGGER.debug("close order " + orderId + " response " + wxCloseResBody);
+        if (wxCloseResBody == null)
+            return clientErrResponse(BAD_GATEWAY, orderId, null,
+                orderStatus, storedPayStatus, "请求微信关闭订单失败", reqId);
         Map<String, String> wxCloseResMap = xmlParser.deserializeToMap(wxCloseResBody);
         if (wxCloseResMap == null || !dataBuilder.checkSign(wxCloseResMap))
             return clientErrResponse(BAD_GATEWAY, orderId, null,
-                orderStatus, orderPay.getPayStatus(), "微信返回结果异常或解析失败", reqId);
+                orderStatus, storedPayStatus, "微信返回结果异常或解析失败", reqId);
         // check return status
         final String returnCode = wxCloseResMap.get(K_RETURN_CODE); // todo
         final String returnMsg = wxCloseResMap.get(K_RETURN_MSG);
         if (!isSuccess(returnCode))
             return clientErrResponse(BAD_GATEWAY, orderId, null,
-                orderStatus, orderPay.getPayStatus(),
+                orderStatus, storedPayStatus,
                 returnCode, returnMsg, "请求微信出错", reqId);
         final String resultCode = wxCloseResMap.get(K_RESULT_CODE);
         final String resultMsg = wxCloseResMap.get(K_RETURN_MSG);
-        if (isSuccess(resultCode)) {
-            orderPay.setPayStatus(PayStatus.CLOSE);
-            orderPay.setCloseTime(ZonedDateTime.now());
-            orderPay.setRemark(resultMsg);
-            dbService.updateOrderPayRecord(orderPay);
-            return clientOkResponse(new WxClientResponse(orderId, orderStatus, orderPay.getPayStatus(), reqId));
-        } else {
-            return clientErrResponse(BAD_REQUEST, orderId, null, orderStatus, orderPay.getPayStatus(),
+        if (!isSuccess(resultCode))
+            return clientErrResponse(BAD_REQUEST, orderId, null, orderStatus, storedPayStatus,
                 wxCloseResMap.get(K_ERR_CODE), wxCloseResMap.get(K_ERR_CODE_DES),
                 "关闭请求失败: " + resultCode + " " + resultMsg, reqId);
-        }
+        // all ok, update
+        orderPay.setPayStatus(PayStatus.CLOSE);
+        orderPay.setCloseTime(ZonedDateTime.now());
+        orderPay.setClosed(true);
+        orderPay.setRemark(resultMsg);
+        dbService.updateOrderPayRecord(orderPay);
+        return clientOkResponse(new WxClientResponse(orderId, orderStatus, orderPay.getPayStatus(), reqId));
     }
 
     // @RequestMapping(value = "/downloadBill", method = RequestMethod.GET)
@@ -439,7 +467,7 @@ public class WxPayController {
     }
 
     private ResponseEntity<String> clientErrResponse(HttpStatus status, String orderId, String errMsg, String reqId) {
-        return clientErrResponse(status, orderId, null, null, null, null, reqId);
+        return clientErrResponse(status, orderId, null, null, null, errMsg, reqId);
     }
 
     private ResponseEntity<String> clientErrResponse(HttpStatus status, String pseudoNo,

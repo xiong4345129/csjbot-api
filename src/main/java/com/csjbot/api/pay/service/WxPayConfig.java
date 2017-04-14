@@ -34,7 +34,7 @@ public class WxPayConfig {
         this.expireMinutes = (expireMinSet == null || expireMinSet < MIN_MINUTES) ?
             EXPIRE_MIN_DEFAULT : expireMinSet;
         Integer syncMinSet = getValueAsInteger(K_SYNC_MIN);
-        this.syncMinutes = (syncMinSet == null) ? expireMinutes / 2 : syncMinSet;
+        this.syncMinutes = (syncMinSet == null) ? MIN_MINUTES : syncMinSet;
     }
 
     public String getValueStrict(String key) {

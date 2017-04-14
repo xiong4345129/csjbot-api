@@ -1,7 +1,10 @@
 package com.csjbot.api.pay.dao;
 
 import com.csjbot.api.pay.model.PmsOrderPay;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component("orderPayMapper")
 public interface PmsOrderPayMapper {
@@ -13,4 +16,7 @@ public interface PmsOrderPayMapper {
     PmsOrderPay get(String orderId);
 
     boolean exists(String orderId);
+
+    boolean existsByCandidate(@Param("pseudoNo") String pseudoNo,
+                              @Param("deviceId") String deviceId);
 }

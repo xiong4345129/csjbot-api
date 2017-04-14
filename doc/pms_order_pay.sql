@@ -23,6 +23,7 @@ CREATE TABLE `pms_order_pay` (
   `pay_err_code` varchar(20) DEFAULT NULL COMMENT '支付错误代码',
   `pay_err_desc` varchar(50) DEFAULT NULL COMMENT '支付错误描述',
 #   `pay_start_time` timestamp NULL DEFAULT NULL COMMENT '支付等待开始时间',
+  `is_closed` tinyint(1) DEFAULT 0 NOT NULL COMMENT '订单是否处理完成：0-未处理完成 1-已处理完成已关闭',
   `close_time` timestamp NULL DEFAULT NULL COMMENT '下单支付记录的实际关闭时间',
   `remark` varchar(200) DEFAULT NULL COMMENT '备注信息',
   PRIMARY KEY (`order_id`),
