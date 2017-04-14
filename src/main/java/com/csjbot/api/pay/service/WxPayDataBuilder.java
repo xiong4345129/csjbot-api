@@ -54,31 +54,6 @@ public class WxPayDataBuilder implements WxPayDataService {
         return WxPayUtil.computeSign(params, apiKey, false);
     }
 
-    @Override
-    public <T> WxPayDataWrapper buildData(T req, OrderPayOp operation) {
-        if (req == null || operation == null)
-            throw new NullPointerException("buildData arguments");
-        WxPayDataWrapper res = new WxPayDataWrapper(true);
-        switch (operation) {
-            case NEW_ORDER:
-                WxClientRequest orderReq = (WxClientRequest) req;
-                WxTradeType tradeType = orderReq.getPayMethod();
-                if (WxTradeType.NATIVE == tradeType) {
-                    res = buildQrPayData(orderReq);
-                }
-                break;
-            case CLOSE_ORDER:
-                res = buildClosePayData((WxClientRequest) req);
-                break;
-            case QUERY_PAY:
-                res = buildQueryData((AbstractMap.SimpleEntry) req);
-                break;
-            default:
-        }
-
-        return res;
-    }
-
     private Map<String, String> createInitialParams() {
         Map<String, String> params = new TreeMap<>();
         params.put(K_APPID, appId);
@@ -86,6 +61,7 @@ public class WxPayDataBuilder implements WxPayDataService {
         params.put(K_NONCE_STR, WxPayUtil.newNonceStr());
         return params;
     }
+
 
     private WxPayDataWrapper computeSignAndWrapData(Map<String, String> params) {
         // remove null entries
@@ -96,21 +72,39 @@ public class WxPayDataBuilder implements WxPayDataService {
         return new WxPayDataWrapper(params);
     }
 
-    private WxPayDataWrapper buildQueryData(AbstractMap.SimpleEntry<?, ?> idPair) {
-        assert idPair != null;
-        String idKey = (String) idPair.getKey();
-        String idVal = (String) idPair.getValue();
-        assert K_TRANSACTION_ID.equals(idKey) || K_OUT_TRADE_NO.equals(idKey);
-        assert idVal != null;
+    private void ensureNotNull(Object obj) {
+        if (obj == null) throw new NullPointerException();
+    }
+
+    @Override
+    public WxPayDataWrapper buildQueryData(AbstractMap.SimpleEntry<String, String> idPair) {
+        ensureNotNull(idPair);
+        String idKey = idPair.getKey();
+        String idVal = idPair.getValue();
+        if (idVal == null || !(K_TRANSACTION_ID.equals(idKey) || K_OUT_TRADE_NO.equals(idKey)))
+            return new WxPayDataWrapper(true);
         Map<String, String> params = createInitialParams();
         params.put(idKey, idVal);
         return computeSignAndWrapData(params);
     }
 
-    private WxPayDataWrapper buildClosePayData(WxClientRequest clientReq) {
+    @Override
+    public WxPayDataWrapper buildCloseData(WxClientRequest clientReq) {
+        ensureNotNull(clientReq);
         Map<String, String> map = createInitialParams();
         map.put(K_OUT_TRADE_NO, clientReq.getOrderId());
         return computeSignAndWrapData(map);
+    }
+
+    @Override
+    public WxPayDataWrapper buildOrderData(WxClientRequest orderReq) {
+        ensureNotNull(orderReq);
+        WxPayDataWrapper res = new WxPayDataWrapper(true);
+        WxTradeType tradeType = orderReq.getPayMethod();
+        if (WxTradeType.NATIVE == tradeType) {
+            res = buildQrPayData(orderReq);
+        }
+        return res;
     }
 
     private WxPayDataWrapper buildQrPayData(WxClientRequest clientReq) {
@@ -165,6 +159,7 @@ public class WxPayDataBuilder implements WxPayDataService {
                                        String productId, int totalFee,
                                        ZonedDateTime timeStart, ZonedDateTime timeExpire) {
         PmsPayDetailWx wxDetail = new PmsPayDetailWx(orderId);
+        wxDetail.setOutTradeNo(orderId);
         wxDetail.setProductId(productId);
         wxDetail.setTradeType(tradeType);
         wxDetail.setSpbillCreateIp(hostIp);

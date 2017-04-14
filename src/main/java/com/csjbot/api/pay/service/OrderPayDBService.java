@@ -18,6 +18,8 @@ public interface OrderPayDBService {
 
     boolean orderPayRecordExists(String orderId);
 
+    boolean orderPayRecordExists(String orderPseudoNo, String orderDeviceId);
+
     int insertOrderItems(List<PmsOrderItem> items);
 
     Integer getUnitPrice(String itemId);

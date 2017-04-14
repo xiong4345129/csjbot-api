@@ -79,6 +79,11 @@ public class PmsOrderPay {
     private String payErrDesc;
 
     /**
+     * 订单是否处理完成
+     */
+    private Boolean isClosed;
+
+    /**
      * 后台下单支付记录的关闭时间
      */
     private ZonedDateTime closeTime;
@@ -200,6 +205,18 @@ public class PmsOrderPay {
 
     public void setPayErrDesc(String payErrDesc) {
         this.payErrDesc = payErrDesc;
+    }
+
+    public Boolean isClosed(){
+        return isClosed;
+    }
+
+    // public Boolean getClosed() {
+    //     return isClosed;
+    // }
+
+    public void setClosed(Boolean closed) {
+        isClosed = closed;
     }
 
     public ZonedDateTime getCloseTime() {

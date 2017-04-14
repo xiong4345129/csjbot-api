@@ -59,6 +59,11 @@ public class OrderPayDBServiceImpl implements OrderPayDBService {
     }
 
     @Override
+    public boolean orderPayRecordExists(String orderPseudoNo, String orderDeviceId) {
+        return orderPayMapper.existsByCandidate(orderPseudoNo, orderDeviceId);
+    }
+
+    @Override
     public int insertOrderItems(List<PmsOrderItem> items) {
         return itemMapper.insertList(items);
     }

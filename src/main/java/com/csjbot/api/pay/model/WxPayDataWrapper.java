@@ -10,9 +10,6 @@ public class WxPayDataWrapper {
     private List<PmsOrderItem> items;
     private Map<String, String> wxParams;
 
-    public WxPayDataWrapper() {
-    }
-
     public WxPayDataWrapper(boolean empty) {
         this.empty = empty;
     }

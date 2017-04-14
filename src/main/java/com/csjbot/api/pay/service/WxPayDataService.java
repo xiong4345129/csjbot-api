@@ -1,8 +1,9 @@
 package com.csjbot.api.pay.service;
 
-import com.csjbot.api.pay.model.OrderPayOp;
+import com.csjbot.api.pay.model.WxClientRequest;
 import com.csjbot.api.pay.model.WxPayDataWrapper;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 public interface WxPayDataService {
@@ -12,7 +13,10 @@ public interface WxPayDataService {
 
     String computeSign(Map<String, String> params);
 
-    // todo
-    <T> WxPayDataWrapper buildData(T request, OrderPayOp operation);
+    WxPayDataWrapper buildOrderData(WxClientRequest request);
+
+    WxPayDataWrapper buildCloseData(WxClientRequest request);
+
+    WxPayDataWrapper buildQueryData(AbstractMap.SimpleEntry<String, String> request);
 
 }

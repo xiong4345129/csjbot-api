@@ -17,6 +17,7 @@
         <result column="pay_status" jdbcType="VARCHAR" property="payStatus"/>
         <result column="pay_err_code" jdbcType="VARCHAR" property="payErrCode"/>
         <result column="pay_err_desc" jdbcType="VARCHAR" property="payErrDesc"/>
+        <result column="is_closed" jdbcType="BOOLEAN" property="isClosed"/>
         <result column="close_time" jdbcType="TIMESTAMP" property="closeTime"/>
         <result column="remark" jdbcType="VARCHAR" property="remark"/>
     </resultMap>
@@ -37,7 +38,9 @@
         pay_status,
         pay_err_code,
         pay_err_desc,
-        close_time
+        is_closed,
+        close_time,
+        remark
     </sql>
     <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
@@ -61,9 +64,7 @@
             <if test="orderErrDesc != null">
                 order_err_desc,
             </if>
-            <if test="payService != null">
-                pay_service,
-            </if>
+            pay_service,
             <if test="payStatus != null">
                 pay_status,
             </if>
@@ -73,8 +74,14 @@
             <if test="payErrDesc != null">
                 pay_err_desc,
             </if>
+            <if test="isClosed != null">
+                is_closed,
+            </if>
             <if test="closeTime != null">
                 close_time,
+            </if>
+            <if test="remark != null">
+                remark,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -91,9 +98,7 @@
             <if test="orderErrDesc != null">
                 #{orderErrDesc,jdbcType=VARCHAR},
             </if>
-            <if test="payService != null">
-                #{payService,jdbcType=VARCHAR},
-            </if>
+            #{payService,jdbcType=VARCHAR},
             <if test="payStatus != null">
                 #{payStatus,jdbcType=VARCHAR},
             </if>
@@ -103,8 +108,14 @@
             <if test="payErrDesc != null">
                 #{payErrDesc,jdbcType=VARCHAR},
             </if>
+            <if test="isClosed != null">
+                #{isClosed,jdbcType=BOOLEAN},
+            </if>
             <if test="closeTime != null">
                 #{closeTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -120,9 +131,6 @@
             <if test="orderErrDesc != null">
                 order_err_desc = #{orderErrDesc,jdbcType=VARCHAR},
             </if>
-            <if test="payService != null">
-                pay_service = #{payService,jdbcType=VARCHAR},
-            </if>
             <if test="payStatus != null">
                 pay_status = #{payStatus,jdbcType=VARCHAR},
             </if>
@@ -132,14 +140,23 @@
             <if test="payErrDesc != null">
                 pay_err_desc = #{payErrDesc,jdbcType=VARCHAR},
             </if>
+            <if test="isClosed != null">
+                is_closed = #{isClosed,jdbcType=BOOLEAN},
+            </if>
             <if test="closeTime != null">
                 close_time = #{closeTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null">
+                remark = #{remark,jdbcType=VARCHAR},
             </if>
         </set>
         where order_id = #{orderId,jdbcType=VARCHAR}
     </update>
 
     <select id="exists" resultType="java.lang.Boolean" parameterType="string">
-        SELECT EXISTS(SELECT 1 FROM pms_order_pay WHERE order_id= #{orderId} );
+        SELECT EXISTS(SELECT 1 FROM pms_order_pay WHERE order_id= #{orderId})
+    </select>
+    <select id="existsByCandidate" resultType="java.lang.Boolean" parameterType="map">
+        SELECT EXISTS(SELECT 1 FROM pms_order_pay WHERE order_pseudo_no = #{pseudoNo} AND order_device_id = #{deviceId})
     </select>
 </mapper>
