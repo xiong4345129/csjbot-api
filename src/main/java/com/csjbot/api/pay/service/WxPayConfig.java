@@ -6,15 +6,20 @@ import java.util.Properties;
 
 public class WxPayConfig {
 
+    public static final Integer MIN_MINUTES = 5;
     public static final String K_SERVER_IP = "server.ip.public";
     public static final String K_EXPIRE_MIN = "pay.wx.time.expire.min";
+    public static final String K_SYNC_MIN = "pay.wx.time.sync.min";
     public static final String K_ORDER_URL = "pay.wx.order.url";
     public static final String K_QUERY_URL = "pay.wx.query.url";
     public static final String K_CLOSE_URL = "pay.wx.close.url";
     public static final String K_NOTIFY_URL = "pay.wx.notify.url";
 
+    public static final Integer EXPIRE_MIN_DEFAULT = 120;
+
     private final Properties prop;
     private final String serverIp;
+    private final Integer expireMinutes, syncMinutes;
     private final URI orderUrl, queryUrl, closeUrl, notifyUrl;
 
     public WxPayConfig(Properties prop) {
@@ -25,6 +30,11 @@ public class WxPayConfig {
         queryUrl = getUri(getValueStrict(K_QUERY_URL));
         closeUrl = getUri(getValueStrict(K_CLOSE_URL));
         notifyUrl = getUri(getValueStrict(K_NOTIFY_URL));
+        Integer expireMinSet = getValueAsInteger(K_EXPIRE_MIN);
+        this.expireMinutes = (expireMinSet == null || expireMinSet < MIN_MINUTES) ?
+            EXPIRE_MIN_DEFAULT : expireMinSet;
+        Integer syncMinSet = getValueAsInteger(K_SYNC_MIN);
+        this.syncMinutes = (syncMinSet == null) ? expireMinutes / 2 : syncMinSet;
     }
 
     public String getValueStrict(String key) {
@@ -60,6 +70,14 @@ public class WxPayConfig {
 
     public URI getNotifyUrl() {
         return notifyUrl;
+    }
+
+    public Integer getExpireMinutes() {
+        return expireMinutes;
+    }
+
+    public Integer getSyncMinutes() {
+        return syncMinutes;
     }
 
     private static boolean isEmpty(String str) {

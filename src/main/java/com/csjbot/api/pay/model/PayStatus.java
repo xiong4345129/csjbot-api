@@ -5,10 +5,14 @@ public enum PayStatus {
     PRE,
     /** 三方支付请求已创建，等待买家付款 */
     WAIT,
+    /** 支付请求失败或未创建、取消支付 */
+    CANCEL,
+    /** 支付请求已创建、关闭支付 */
+    CLOSE,
+    /** 支付超时失效 */
+    EXPIRE,
     /** 支付成功 */
     SUCCESS,
-    /** 主动取消/关闭支付 */
-    CANCEL,
     /** 支付失败或出错 */
     FAIL;
 

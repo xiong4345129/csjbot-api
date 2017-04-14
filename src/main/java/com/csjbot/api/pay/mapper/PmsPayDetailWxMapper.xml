@@ -14,6 +14,7 @@
         <result column="product_id" jdbcType="VARCHAR" property="productId"/>
         <result column="code_url" jdbcType="VARCHAR" property="codeUrl"/>
         <result column="trade_state" jdbcType="VARCHAR" property="tradeState"/>
+        <result column="trade_state_desc" jdbcType="VARCHAR" property="tradeStateDesc"/>
         <result column="time_start" jdbcType="TIMESTAMP" property="timeStart"/>
         <result column="time_end" jdbcType="TIMESTAMP" property="timeEnd"/>
         <result column="time_expire" jdbcType="TIMESTAMP" property="timeExpire"/>
@@ -30,13 +31,14 @@
         <result column="goods_tag" jdbcType="VARCHAR" property="goodsTag"/>
         <result column="openid" jdbcType="VARCHAR" property="openid"/>
         <result column="is_subscribe" jdbcType="VARCHAR" property="isSubscribe"/>
+        <result column="sync_time" jdbcType="TIMESTAMP" property="syncTime"/>
     </resultMap>
 
     <sql id="Column_List">
     order_id, create_time, update_time, spbill_create_ip, out_trade_no, prepay_id, transaction_id, 
     trade_type, limit_pay, product_id, code_url, trade_state, time_start, time_end, time_expire, 
     bank_type, total_fee, fee_type, refund_fee, refund_fee_type, cash_fee, cash_fee_type, 
-    cash_refund_fee, settlement_total_fee, coupon_fee, goods_tag, openid, is_subscribe
+    cash_refund_fee, settlement_total_fee, coupon_fee, goods_tag, openid, is_subscribe, sync_time
     </sql>
     <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
@@ -73,7 +75,10 @@
                 code_url,
             </if>
             <if test="tradeState != null">
-                trade_state,
+            trade_state,
+        </if>
+            <if test="tradeStateDesc != null">
+                trade_state_desc,
             </if>
             <if test="timeStart != null">
                 time_start,
@@ -123,6 +128,9 @@
             <if test="isSubscribe != null">
                 is_subscribe,
             </if>
+            <if test="syncTime != null">
+                sync_time,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{orderId,jdbcType=VARCHAR},
@@ -152,6 +160,9 @@
             </if>
             <if test="tradeState != null">
                 #{tradeState,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeStateDesc != null">
+                #{tradeStateDesc,jdbcType=VARCHAR},
             </if>
             <if test="timeStart != null">
                 #{timeStart,jdbcType=TIMESTAMP},
@@ -201,6 +212,9 @@
             <if test="isSubscribe != null">
                 #{isSubscribe,jdbcType=VARCHAR},
             </if>
+            <if test="syncTime != null">
+                #{syncTime,jdbcType=TIMESTAMP},
+            </if>
         </trim>
     </insert>
     <update id="update" parameterType="com.csjbot.api.pay.model.PmsPayDetailWx">
@@ -232,6 +246,9 @@
             </if>
             <if test="tradeState != null">
                 trade_state = #{tradeState,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeStateDesc != null">
+                trade_state_desc = #{tradeStateDesc,jdbcType=VARCHAR},
             </if>
             <if test="timeStart != null">
                 time_start = #{timeStart,jdbcType=TIMESTAMP},
@@ -280,6 +297,9 @@
             </if>
             <if test="isSubscribe != null">
                 is_subscribe = #{isSubscribe,jdbcType=VARCHAR},
+            </if>
+            <if test="syncTime != null">
+                sync_time = #{syncTime,jdbcType=TIMESTAMP},
             </if>
         </set>
         where order_id = #{orderId,jdbcType=VARCHAR}

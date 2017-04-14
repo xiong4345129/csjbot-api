@@ -22,8 +22,9 @@ CREATE TABLE `pms_order_pay` (
   `pay_status` varchar(20) NOT NULL COMMENT '支付状态',
   `pay_err_code` varchar(20) DEFAULT NULL COMMENT '支付错误代码',
   `pay_err_desc` varchar(50) DEFAULT NULL COMMENT '支付错误描述',
-  `pay_start_time` timestamp NULL DEFAULT NULL COMMENT '支付等待开始时间',
-  `pay_close_time` timestamp NULL DEFAULT NULL COMMENT '支付实际关闭时间',
+#   `pay_start_time` timestamp NULL DEFAULT NULL COMMENT '支付等待开始时间',
+  `close_time` timestamp NULL DEFAULT NULL COMMENT '下单支付记录的实际关闭时间',
+  `remark` varchar(200) DEFAULT NULL COMMENT '备注信息',
   PRIMARY KEY (`order_id`),
   UNIQUE KEY `order_id` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单、支付状态表';
@@ -76,6 +77,7 @@ CREATE TABLE `pms_pay_detail_wx` (
   `product_id` VARCHAR(32) COMMENT '商品ID',
   `code_url` VARCHAR(64) COMMENT '二维码链接',
   `trade_state` VARCHAR(32) COMMENT '交易状态',
+  `trade_state_desc` VARCHAR(256) COMMENT '交易状态描述',
   `bank_type` VARCHAR(16) COMMENT '付款银行',
   `total_fee` INT COMMENT '标价金额',
   `fee_type` VARCHAR(8) COMMENT '标价货种',
@@ -92,6 +94,7 @@ CREATE TABLE `pms_pay_detail_wx` (
   `time_start` timestamp NULL DEFAULT NULL COMMENT '支付开始时间',
   `time_expire` TIMESTAMP NULL DEFAULT NULL COMMENT '交易失效时间',
   `time_end` timestamp NULL DEFAULT NULL COMMENT '支付完成时间',
+  `sync_time` timestamp NULL DEFAULT NULL COMMENT '上次向微信查询订单时间',
   PRIMARY KEY (`order_id`),
   UNIQUE KEY `order_id` (`order_id`),
   CONSTRAINT `pms_pay_detail_wx_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `pms_order_pay` (`order_id`)

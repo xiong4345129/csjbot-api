@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -123,6 +124,14 @@ public final class WxPayUtil {
         return (zdt == null) ? null :
             zdt.toString().substring(0, 19)
                 .replaceAll("[^0-9]", "");
+    }
+
+    public static boolean isLater(ZonedDateTime left, ZonedDateTime right) {
+        return ChronoUnit.SECONDS.between(left, right) < 0;
+    }
+
+    public static long minutesBetween(ZonedDateTime start, ZonedDateTime end){
+        return ChronoUnit.MINUTES.between(start, end);
     }
 
     // public static String makeXml(Map<String, String> map) {

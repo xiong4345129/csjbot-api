@@ -79,14 +79,14 @@ public class PmsOrderPay {
     private String payErrDesc;
 
     /**
-     * 支付等待开始时间
+     * 后台下单支付记录的关闭时间
      */
-    private ZonedDateTime payStartTime;
+    private ZonedDateTime closeTime;
 
     /**
-     * 支付实际关闭时间
+     * 备注信息
      */
-    private ZonedDateTime payCloseTime;
+    private String remark;
 
     public PmsOrderPay() { }
 
@@ -146,8 +146,8 @@ public class PmsOrderPay {
         this.orderTotalFee = orderTotalFee;
     }
 
-    public String getOrderStatus() {
-        return orderStatus;
+    public OrderStatus getOrderStatus() {
+        return OrderStatus.valueOf(orderStatus);
     }
 
     public void setOrderStatus(OrderStatus orderStatus) {
@@ -178,8 +178,8 @@ public class PmsOrderPay {
         this.payService = payService.name();
     }
 
-    public String getPayStatus() {
-        return payStatus;
+    public PayStatus getPayStatus() {
+        return PayStatus.valueOf(payStatus);
     }
 
     public void setPayStatus(PayStatus payStatus) {
@@ -202,19 +202,19 @@ public class PmsOrderPay {
         this.payErrDesc = payErrDesc;
     }
 
-    public ZonedDateTime getPayStartTime() {
-        return payStartTime;
+    public ZonedDateTime getCloseTime() {
+        return closeTime;
     }
 
-    public void setPayStartTime(ZonedDateTime payStartTime) {
-        this.payStartTime = payStartTime;
+    public void setCloseTime(ZonedDateTime closeTime) {
+        this.closeTime = closeTime;
     }
 
-    public ZonedDateTime getPayCloseTime() {
-        return payCloseTime;
+    public String getRemark() {
+        return remark;
     }
 
-    public void setPayCloseTime(ZonedDateTime payCloseTime) {
-        this.payCloseTime = payCloseTime;
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }
