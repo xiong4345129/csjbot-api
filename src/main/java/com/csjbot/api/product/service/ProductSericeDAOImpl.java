@@ -222,7 +222,7 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 		pms_order_pay.setOrder_id(order_id);
 		pms_order_pay.setCreate_time(RandomUtil.getTimeStampFor());
 		pms_order_pay.setUpdate_time(RandomUtil.getTimeStampFor());
-		pms_order_pay.setOrder_time(RandomUtil.getTimeStampByStr(json.getString("orderTime").replace("T"," ")));
+		pms_order_pay.setOrder_time(RandomUtil.getTimeStampByStr(json.getString("orderTime").replace("T"," ").substring(0,20)));
 		pms_order_pay.setOrder_status("success");
 		pms_order_pay.setPay_service("alipay");
 		pms_order_pay.setPay_status("wait");
