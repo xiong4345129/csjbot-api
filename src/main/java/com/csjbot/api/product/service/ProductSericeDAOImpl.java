@@ -170,7 +170,7 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 		result.put("zipName", zipMap.get("zipName").toString());
 		result.put("zipUrl", zipMap.get("zipUrl").toString());
 		// 使用阿里云存储，默认写死路径
-		// result.put("zipName", "1.zip");
+		 //result.put("zipName", "1.zip");
 		// result.put("zipUrl",
 		// "http://product-img256.oss-cn-shanghai.aliyuncs.com/1.zip");
 		result.put("ADVERTISMENT_VIDEO", video);
@@ -226,6 +226,7 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 		pms_order_pay.setOrder_status("success");
 		pms_order_pay.setPay_service("alipay");
 		pms_order_pay.setPay_status("wait");
+		pms_order_pay.setIs_closed(0);
 		pms_order_pay.setOrder_device_group(json.getString("robotModel"));
 		pms_order_pay.setOrder_device_id(json.getString("robotUid"));
 		pms_order_pay.setOrder_pseudo_no(json.getString("orderPseudoNo"));
@@ -377,8 +378,8 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 					data.put("payCashFee",alipay_trade_query_response.getString("total_amount"));
 					data.put("payCouponFee",alipay_trade_query_response.getString("point_amount"));
 					data.put("payRefundFee", 0.00);
-					data.put("wxOpenId",alipay_trade_query_response.getString("open_id") );
-					data.put("wxTransactionId",alipay_trade_query_response.getString("trade_no") );
+					data.put("wxOpenId",alipay_trade_query_response.getString("buyer_user_id"));
+					data.put("wxTransactionId",alipay_trade_query_response.getString("trade_no"));
 					data.put("remark", "");
 				}else {
 					data.put("orderId", order_id);
