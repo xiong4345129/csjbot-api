@@ -7,6 +7,8 @@ import com.csjbot.api.meals.dao.Scs_dish_infoDAO;
 import com.csjbot.api.meals.dao.Scs_dish_typeDAO;
 import com.csjbot.api.meals.model.Scs_dish_info;
 import com.csjbot.api.meals.model.Scs_dish_type;
+import com.csjbot.api.robot.dao.Sys_attachmentDAO;
+import com.csjbot.api.robot.model.Sys_attachment;
 import com.csjbot.api.robot.util.CharacterUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,9 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
 
     @Autowired
     private Scs_dish_typeDAO scs_dish_typeDAO;
+
+    @Autowired
+    private Sys_attachmentDAO sys_attachmentDAO;
 
     //查询所有菜品信息
     @Override
@@ -274,6 +279,23 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
             jsonUtil = getJsonUtilEntity(false);
             jsonUtil.setMessage("Error from json format!");
         }
+        return JsonUtil.toJson(jsonUtil);
+    }
+
+    //查询所有附件信息
+    @Override
+    public JSONObject showAccessoryS() {
+        JsonUtil jsonUtil = getJsonUtilEntity(true);
+        List<Object> ace = new ArrayList<>();
+        List<Sys_attachment> list = sys_attachmentDAO.getSystByType("SC_ACCESSORY");
+        for (Sys_attachment sa:list) {
+            Map<String,Object> demo = new HashMap<>();
+            demo.put("file_name",sa.getAlias_name().toString());
+            demo.put("file_type",sa.getFile_type().toString());
+            demo.put("file_url",sa.getLocation().toString());
+            ace.add(demo);
+        }
+        jsonUtil.setResult(ace);
         return JsonUtil.toJson(jsonUtil);
     }
 

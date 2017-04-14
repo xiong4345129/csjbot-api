@@ -19,4 +19,7 @@ public interface Sys_attachmentDAO extends BaseDAO<Sys_attachment> {
 	
 	//根据文件名来获得文件
 	public abstract Sys_attachment getSystByName(String fileName);
+
+	//根据文件类型类获得文件列表
+	public abstract List<Sys_attachment> getSystByType(String type);
 }

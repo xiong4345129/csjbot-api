@@ -34,4 +34,8 @@ public interface ScsDishServiceDAO {
 
     //根据菜品名称查询
     public JSONObject findDishByName(JSONObject json);
+
+    //查询所有附件信息
+    public JSONObject showAccessoryS();
+
 }

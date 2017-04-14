@@ -33,7 +33,7 @@ public class SnowRobotController {
 	private SnowRobotServiceDAO snowRobotServiceDAO;
 	
 	// 机器人出库请求相应
-	@RequestMapping(value = "api/sms/outWarehouse", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/outWarehouse", method = RequestMethod.POST)
 	@ResponseBody
 	public void addRobot(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -41,7 +41,7 @@ public class SnowRobotController {
 	}
 	
 	// 主人注册（机器人端）
-	@RequestMapping(value = "api/sms/masterRegister", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/masterRegister", method = RequestMethod.POST)
 	@ResponseBody
 	public void masterRegister(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -49,7 +49,7 @@ public class SnowRobotController {
 	}
 	
 	// 用户注册（手机端）
-	@RequestMapping(value = "api/sms/userRegister", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/userRegister", method = RequestMethod.POST)
 	@ResponseBody
 	public void userRegister(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -57,7 +57,7 @@ public class SnowRobotController {
 	}
 	
 	// 验证码获取
-	@RequestMapping(value = "api/sms/getAuthCode", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/getAuthCode", method = RequestMethod.POST)
 	@ResponseBody
 	public void getAuthCode(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException{
@@ -65,7 +65,7 @@ public class SnowRobotController {
 	}
 	
 	// 修改机器人信息
-	@RequestMapping(value = "api/sms/updateRobot", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/updateRobot", method = RequestMethod.POST)
 	@ResponseBody
 	public void updateRobot(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -73,7 +73,7 @@ public class SnowRobotController {
 	}
 	
 	// 用户登录
-	@RequestMapping(value = "api/sms/userLogin", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/userLogin", method = RequestMethod.POST)
 	@ResponseBody
 	public void userLogin(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -81,7 +81,7 @@ public class SnowRobotController {
 	}
 	
 	// 用户登出
-	@RequestMapping(value = "api/sms/userLogout", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/userLogout", method = RequestMethod.POST)
 	@ResponseBody
 	public void userLogout(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -89,7 +89,7 @@ public class SnowRobotController {
 	}
 	
 	// 校验机器人当前注册绑定情况
-	@RequestMapping(value = "api/sms/judgeRobotStatus", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/judgeRobotStatus", method = RequestMethod.POST)
 	@ResponseBody
 	public void judgeRobotStatus(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -97,7 +97,7 @@ public class SnowRobotController {
 	}
 	
 	// 校验用户
-	@RequestMapping(value = "api/sms/judgeUserStatus", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/judgeUserStatus", method = RequestMethod.POST)
 	@ResponseBody
 	public void judgeUserStatus(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -105,7 +105,7 @@ public class SnowRobotController {
 	}
 	
 	// 修改用户昵称
-	@RequestMapping(value = "api/sms/changeUserName", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/changeUserName", method = RequestMethod.POST)
 	@ResponseBody
 	public void changeUserName(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -113,7 +113,7 @@ public class SnowRobotController {
 	}
 	
 	// 修改用户头像
-	@RequestMapping(value = "api/sms/changeUserHead", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/changeUserHead", method = RequestMethod.POST)
 	@ResponseBody
 	public void changeUserHead(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -121,7 +121,7 @@ public class SnowRobotController {
 	}
 	
 	// 忘记用户密码
-	@RequestMapping(value = "api/sms/changeUserPwd", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/changeUserPwd", method = RequestMethod.POST)
 	@ResponseBody
 	public void changeUserPwd(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -129,7 +129,7 @@ public class SnowRobotController {
 	}
 	
 	// 修改用户密码
-	@RequestMapping(value = "api/sms/frogetPassword", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/frogetPassword", method = RequestMethod.POST)
 	@ResponseBody
 	public void changeUserPwd1(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -137,7 +137,7 @@ public class SnowRobotController {
 	}
 	
 	// 修改用户手机号
-	@RequestMapping(value = "api/sms/changeUserMobile", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/changeUserMobile", method = RequestMethod.POST)
 	@ResponseBody
 	public void changeUserMobile(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -145,7 +145,7 @@ public class SnowRobotController {
 	}
 	
 	// 检验手机号和验证码是否一致
-	@RequestMapping(value = "api/sms/judgeMobileCode", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/judgeMobileCode", method = RequestMethod.POST)
 	@ResponseBody
 	public void judgeMobileCode(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -153,7 +153,7 @@ public class SnowRobotController {
 	}
 	
 	// 与服务器端通信
-	@RequestMapping(value = "api/sms/judgeStatus", method = RequestMethod.GET)
+	@RequestMapping(value = "/sms/judgeStatus", method = RequestMethod.GET)
 	public void judgeStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String type = request.getParameter("type").toString();
 		String id = request.getParameter("id").toString();
@@ -167,7 +167,7 @@ public class SnowRobotController {
 	}
 	
 	//查询机器人数据（前台）
-	@RequestMapping(value = "api/sms/showInfo", method = RequestMethod.GET)
+	@RequestMapping(value = "/sms/showInfo", method = RequestMethod.GET)
 	@ResponseBody
 	public void showInfo(@RequestParam("str") String strss, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -175,7 +175,7 @@ public class SnowRobotController {
 	}
 	
 	//删除机器人数据（前台）
-	@RequestMapping(value = "api/sms/deleteInfo", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/deleteInfo", method = RequestMethod.POST)
 	@ResponseBody
 	public void deleteInfo(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -183,7 +183,7 @@ public class SnowRobotController {
 	}
 	
 	//添加组
-	@RequestMapping(value = "api/sms/addGroup", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/addGroup", method = RequestMethod.POST)
 	@ResponseBody
 	public void addGroup(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -191,7 +191,7 @@ public class SnowRobotController {
 	}
 	
 	//删除组
-	@RequestMapping(value = "api/sms/deleteGroup", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/deleteGroup", method = RequestMethod.POST)
 	@ResponseBody
 	public void deleteGroup(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -200,7 +200,7 @@ public class SnowRobotController {
 	
 	
 	//添加组成员
-	@RequestMapping(value = "api/sms/addMember", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/addMember", method = RequestMethod.POST)
 	@ResponseBody
 	public void addMember(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -208,7 +208,7 @@ public class SnowRobotController {
 	}
 	
 	//查询组信息
-	@RequestMapping(value = "api/sms/showGroupInfo", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/showGroupInfo", method = RequestMethod.POST)
 	@ResponseBody
 	public void showGroupInfo(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -216,7 +216,7 @@ public class SnowRobotController {
 	}
 	
 	//删除组关系
-	@RequestMapping(value = "api/sms/deleteUG", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/deleteUG", method = RequestMethod.POST)
 	@ResponseBody
 	public void deleteUG(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -224,7 +224,7 @@ public class SnowRobotController {
 	}
 	
 	//获得管理员账号
-	@RequestMapping(value = "api/sms/getAdmin", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/getAdmin", method = RequestMethod.POST)
 	@ResponseBody
 	public void getAdmin(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
@@ -232,7 +232,7 @@ public class SnowRobotController {
 	}
 	
 	//管理员登录
-	@RequestMapping(value = "api/sms/adminLogin", method = RequestMethod.POST)
+	@RequestMapping(value = "/sms/adminLogin", method = RequestMethod.POST)
 	@ResponseBody
 	public void adminLogin(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
