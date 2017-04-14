@@ -9,6 +9,7 @@
         <result column="out_trade_no" jdbcType="VARCHAR" property="outTradeNo"/>
         <result column="prepay_id" jdbcType="VARCHAR" property="prepayId"/>
         <result column="transaction_id" jdbcType="VARCHAR" property="transactionId"/>
+        <result column="body" jdbcType="VARCHAR" property="body"/>
         <result column="trade_type" jdbcType="VARCHAR" property="tradeType"/>
         <result column="limit_pay" jdbcType="VARCHAR" property="limitPay"/>
         <result column="product_id" jdbcType="VARCHAR" property="productId"/>
@@ -35,10 +36,14 @@
     </resultMap>
 
     <sql id="Column_List">
-    order_id, create_time, update_time, spbill_create_ip, out_trade_no, prepay_id, transaction_id, 
-    trade_type, limit_pay, product_id, code_url, trade_state, time_start, time_end, time_expire, 
-    bank_type, total_fee, fee_type, refund_fee, refund_fee_type, cash_fee, cash_fee_type, 
-    cash_refund_fee, settlement_total_fee, coupon_fee, goods_tag, openid, is_subscribe, sync_time
+    order_id, create_time, update_time, spbill_create_ip,
+    out_trade_no, prepay_id, transaction_id, body,
+    trade_type, limit_pay, product_id, code_url,
+    trade_state, time_start, time_end, time_expire,
+    bank_type, total_fee, fee_type, refund_fee,
+    refund_fee_type, cash_fee, cash_fee_type, cash_refund_fee,
+    settlement_total_fee, coupon_fee, goods_tag, openid,
+    is_subscribe, sync_time
     </sql>
     <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
@@ -62,6 +67,9 @@
             <if test="transactionId != null">
                 transaction_id,
             </if>
+            <if test="body!= null">
+                body,
+            </if>
             <if test="tradeType != null">
                 trade_type,
             </if>
@@ -75,8 +83,8 @@
                 code_url,
             </if>
             <if test="tradeState != null">
-            trade_state,
-        </if>
+                trade_state,
+            </if>
             <if test="tradeStateDesc != null">
                 trade_state_desc,
             </if>
@@ -145,6 +153,9 @@
             </if>
             <if test="transactionId != null">
                 #{transactionId,jdbcType=VARCHAR},
+            </if>
+            <if test="body!= null">
+                #{body,jdbcType=VARCHAR},
             </if>
             <if test="tradeType != null">
                 #{tradeType,jdbcType=VARCHAR},
@@ -231,6 +242,9 @@
             </if>
             <if test="transactionId != null">
                 transaction_id = #{transactionId,jdbcType=VARCHAR},
+            </if>
+            <if test="body != null">
+                body = #{body,jdbcType=VARCHAR},
             </if>
             <if test="tradeType != null">
                 trade_type = #{tradeType,jdbcType=VARCHAR},
