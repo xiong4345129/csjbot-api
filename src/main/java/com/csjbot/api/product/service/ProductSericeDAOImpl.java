@@ -239,9 +239,9 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 				JSONObject jsonObject = (JSONObject) JSONObject.toJSON(object);
 				pms_order_detail = new Pms_order_item();
 				pms_order_detail.setOrder_id(order_id);
-				pms_order_detail.setItem_id(jsonObject.getString("objectId"));
-				pms_order_detail.setItem_qty(jsonObject.getInteger("qty"));
-				Pms_product pms_product = pms_productDAO.selectByPrimaryKey(jsonObject.getString("objectId"));
+				pms_order_detail.setItem_id(jsonObject.getString("itemId"));
+				pms_order_detail.setItem_qty(jsonObject.getInteger("itemQty"));
+				Pms_product pms_product = pms_productDAO.selectByPrimaryKey(jsonObject.getString("itemId"));
 				if (pms_product != null) {
 					System.out.println(pms_product.getPrice());
 					price = pms_product.getPrice() * 100;
