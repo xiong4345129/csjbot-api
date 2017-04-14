@@ -29,6 +29,7 @@ public class Pms_order_pay {
 	private String pay_status;
 	private String pay_err_code;
 	private String pay_err_desc;
+	private Integer is_closed;
 	private String remark;
 	private Timestamp close_time;
 
@@ -152,6 +153,14 @@ public class Pms_order_pay {
 		this.pay_err_desc = pay_err_desc;
 	}
 
+	public Integer getIs_closed() {
+		return is_closed;
+	}
+
+	public void setIs_closed(Integer is_closed) {
+		this.is_closed = is_closed;
+	}
+
 	public String getRemark() {
 		return remark;
 	}
@@ -172,7 +181,7 @@ public class Pms_order_pay {
 		super();
 	}
 
-	public Pms_order_pay(Timestamp create_time, Timestamp update_time, String order_id, Timestamp order_time, String order_pseudo_no, String order_device_group, String order_device_id, Integer order_total_fee, String order_status, String order_err_code, String order_err_desc, String pay_service, String pay_status, String pay_err_code, String pay_err_desc, String remark, Timestamp close_time) {
+	public Pms_order_pay(Timestamp create_time, Timestamp update_time, String order_id, Timestamp order_time, String order_pseudo_no, String order_device_group, String order_device_id, Integer order_total_fee, String order_status, String order_err_code, String order_err_desc, String pay_service, String pay_status, String pay_err_code, String pay_err_desc, Integer is_closed, String remark, Timestamp close_time) {
 		this.create_time = create_time;
 		this.update_time = update_time;
 		this.order_id = order_id;
@@ -188,6 +197,7 @@ public class Pms_order_pay {
 		this.pay_status = pay_status;
 		this.pay_err_code = pay_err_code;
 		this.pay_err_desc = pay_err_desc;
+		this.is_closed = is_closed;
 		this.remark = remark;
 		this.close_time = close_time;
 	}
@@ -210,6 +220,7 @@ public class Pms_order_pay {
 				", pay_status='" + pay_status + '\'' +
 				", pay_err_code='" + pay_err_code + '\'' +
 				", pay_err_desc='" + pay_err_desc + '\'' +
+				", is_closed=" + is_closed +
 				", remark='" + remark + '\'' +
 				", close_time=" + close_time +
 				'}';
