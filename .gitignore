@@ -12,6 +12,7 @@ log/
 *.log
 
 # ide files
+*.iml
 .idea/
 .metadata/
 .classpath

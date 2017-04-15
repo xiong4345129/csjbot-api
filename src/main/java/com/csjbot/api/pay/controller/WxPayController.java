@@ -28,10 +28,16 @@ import static org.springframework.http.MediaType.*;
 @RestController
 @RequestMapping("/pay/wx")
 public class WxPayController {
-    @RequestMapping(produces = TEXT_PLAIN_VALUE)
+    // @RequestMapping(produces = "text/plain;charset=UTF-8")
+    @RequestMapping
     @ResponseStatus(OK)
     public String hello() {
-        return "hello from " + WxPayController.class.getName();
+        LOGGER.debug(System.getProperty("file.encoding"));
+        LOGGER.debug(Charset.defaultCharset().name());
+        String hello =  "hello! file.encoding is " + System.getProperty("file.encoding") +
+            "\n你好，中文是否正常显示？";
+        LOGGER.debug(hello);
+        return hello;
     }
 
     @RequestMapping("/echo")
@@ -120,8 +126,6 @@ public class WxPayController {
         final String pseudoNo = orderPay.getOrderPseudoNo();
         final String orderId = orderPay.getOrderId();
         String wxOrderResBody = wxHttpRes.getBody();
-        LOGGER.debug(System.getProperty("file.encoding"));
-        LOGGER.debug(Charset.defaultCharset().name());
         LOGGER.debug("new order " + orderId + " response " + wxOrderResBody);
         // get response data & check sign
         Map<String, String> wxOrderResMap = xmlParser.deserializeToMap(wxOrderResBody);
