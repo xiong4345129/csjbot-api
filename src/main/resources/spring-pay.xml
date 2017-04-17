@@ -24,55 +24,9 @@
     <bean id="jsonParser" class="com.csjbot.api.pay.service.JacksonJsonParser"/>
     <bean id="xmlParser" class="com.csjbot.api.pay.service.JacksonXmlParser"/>
 
-    <!--mybatis mapper interface scan-->
-    <!--<mybatis:scan base-package="com.csjbot.api.**.dao"/>-->
-    <!--mybatis mappers-->
-    <!--<bean id="baseMapper" class="org.mybatis.spring.mapper.MapperFactoryBean" abstract="true" lazy-init="true">-->
-    <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"/>-->
-    <!--</bean>-->
-    <!--<bean id="orderPayMapper" parent="baseMapper">-->
-    <!--<property name="mapperInterface" value="com.csjbot.api.pay.dao.PmsOrderPayMapper"/>-->
-    <!--</bean>-->
-    <!--<bean id="wxPayMapper" parent="baseMapper">-->
-    <!--<property name="mapperInterface" value="com.csjbot.api.pay.dao.PmsPayDetailWxMapper"/>-->
-    <!--</bean>-->
-    <!--<bean id="itemMapper" parent="baseMapper">-->
-    <!--<property name="mapperInterface" value="com.csjbot.api.pay.dao.PmsOrderItemMapper"/>-->
-    <!--</bean>-->
-    <!--<bean id="httpLogMapper" parent="baseMapper">-->
-    <!--<property name="mapperInterface" value="com.csjbot.api.pay.dao.PmsOrderPayHttpLogMapper"/>-->
-    <!--</bean>-->
-    <!--<bean id="customMapper" parent="baseMapper">-->
-    <!--<property name="mapperInterface" value="com.csjbot.api.pay.dao.PmsOrderPayCustomMapper"/>-->
-    <!--</bean>-->
-
-
-    <!--<bean id="orderPayDBService" class="com.csjbot.api.pay.service.OrderPayDBServiceImpl" >-->
-    <!--<property name="orderPayMapper" ref="orderPayMapper"/>-->
-    <!--<property name="itemMapper" ref="itemMapper"/>-->
-    <!--<property name="httpLogMapper" ref="httpLogMapper"/>-->
-    <!--<property name="customMapper" ref="customMapper"/>-->
-    <!--</bean>-->
-    <!--<bean id="wxPayDBService"-->
-    <!--class="com.csjbot.api.pay.service.WxPayDBServiceImpl">-->
-    <!--&lt;!&ndash;<qualifier value="wxPayDBServiceQ"/>&ndash;&gt;-->
-    <!--<property name="orderPayMapper" ref="orderPayMapper"/>-->
-    <!--<property name="itemMapper" ref="itemMapper"/>-->
-    <!--<property name="httpLogMapper" ref="httpLogMapper"/>-->
-    <!--<property name="customMapper" ref="customMapper"/>-->
-    <!--<property name="wxPayMapper" ref="wxPayMapper"/>-->
-    <!--</bean>-->
-
-
-    <!--&lt;!&ndash;<bean id="wxRequestBuilder" class="com.csjbot.api.pay.controller.WxPayRequestBuilder" autowire="no">&ndash;&gt;-->
-    <!--&lt;!&ndash;<constructor-arg type="com.csjbot.api.pay.service.WxConfig" ref="wxConfig"/>&ndash;&gt;-->
-    <!--&lt;!&ndash;<constructor-arg type="com.csjbot.api.pay.service.OrderPayDBService" ref="wxPayDBService"/>&ndash;&gt;-->
-    <!--&lt;!&ndash;</bean>&ndash;&gt;-->
-
-    <!--<bean id="wxController" class="com.csjbot.api.pay.controller.WxController" autowire="no">-->
-    <!--<constructor-arg type="com.csjbot.api.pay.service.WxConfig" ref="wxConfig"/>-->
-    <!--<constructor-arg type="com.csjbot.api.pay.service.WxPayDBService" ref="wxPayDBService"/>-->
-    <!--&lt;!&ndash;<constructor-arg type="com.csjbot.api.pay.service.WxPayRequestService" ref="wxRequestBuilder"/>&ndash;&gt;-->
-    <!--<constructor-arg type="com.csjbot.api.pay.service.MediaTypeParser" ref="jacksonMapper"/>-->
-    <!--</bean>-->
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="5" />
+        <property name="maxPoolSize" value="10" />
+        <property name="queueCapacity" value="25" />
+    </bean>
 </beans>

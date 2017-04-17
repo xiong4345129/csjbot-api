@@ -239,9 +239,9 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 				JSONObject jsonObject = (JSONObject) JSONObject.toJSON(object);
 				pms_order_detail = new Pms_order_item();
 				pms_order_detail.setOrder_id(order_id);
-				pms_order_detail.setItem_id(jsonObject.getString("objectId"));
-				pms_order_detail.setItem_qty(jsonObject.getInteger("qty"));
-				Pms_product pms_product = pms_productDAO.selectByPrimaryKey(jsonObject.getString("objectId"));
+				pms_order_detail.setItem_id(jsonObject.getString("itemId"));
+				pms_order_detail.setItem_qty(jsonObject.getInteger("itemQty"));
+				Pms_product pms_product = pms_productDAO.selectByPrimaryKey(jsonObject.getString("itemId"));
 				if (pms_product != null) {
 					System.out.println(pms_product.getPrice());
 					price = pms_product.getPrice() * 100;
@@ -270,7 +270,7 @@ public class ProductSericeDAOImpl implements ProductServiceDAO {
 				pau.setCreat_time(RandomUtil.getTimeStampFor());
 				pau.setUrl(orderUrl);
 				pms_pay_alipay_urlDAO.insert(pau);
-				redirectUrl = "http://192.168.1.115:8080/api/pdt/redirectPay?key="+redirect_key;
+				redirectUrl = "http://118.178.188.27:8080/api/pdt/redirectPay?key="+redirect_key;
 
 			} catch (AlipayApiException e) {
 				e.printStackTrace();

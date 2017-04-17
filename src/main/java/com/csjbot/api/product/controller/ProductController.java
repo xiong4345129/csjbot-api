@@ -33,7 +33,8 @@ public class ProductController {
 	// 登录
 	@RequestMapping(value = "/pdt/login", method = RequestMethod.POST)
 	@ResponseBody
-	public void login(@RequestBody JSONObject data, HttpServletResponse response) {
+	public void login(@RequestBody JSONObject data, HttpServletRequest request, HttpServletResponse response) {
+		System.out.println(System.getProperty("file.encoding"));
 		ResponseUtil.write(response, productServiceDAO.login(data.getString("account"), data.getString("password")));
 	}
 
