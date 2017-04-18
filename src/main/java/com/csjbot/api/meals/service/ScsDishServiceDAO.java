@@ -46,7 +46,7 @@ public interface ScsDishServiceDAO {
     JSONObject deleteDeskInfo(JSONObject json);
 
     //查看桌位信息
-    JSONObject showAllDeskInfo();
+    JSONObject showAllDeskInfo(Integer desk_type);
 
     JSONObject showDeskInfo(JSONObject json);
 

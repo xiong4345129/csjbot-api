@@ -339,7 +339,7 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
     @Override
     public JSONObject addDeskInfo(JSONObject json) {
         JsonUtil jsonUtil = getJsonUtilEntity(true);
-        String[] key = { "userName","deskNumber","deskAlias","deskMemo","desk_x","desk_y","desk_z","desk_w","desk_v","desk_q","deskValid" };
+        String[] key = { "userName","deskNumber","deskAlias","deskMemo","desk_x","desk_y","desk_z","desk_w","desk_v","desk_q","deskValid","deskSerialNumber" };
         if (CharacterUtil.judgeJsonFormat(key, json)) {
             Scs_desk_info sdi = desk_infoDAO.selectDeskByNubmer(json.getString("deskNumber"));
             Ums_user ums_user = ums_userDAO.findUserByName(json.getString("userName"));
@@ -359,6 +359,7 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
                 sdi.setDeskz(json.getFloat("desk_z"));
                 sdi.setMemo(json.getString("deskMemo"));
                 sdi.setValid(json.getShort("deskValid"));
+                sdi.setDesk_type(json.getInteger("deskSerialNumber"));
                 sdi.setUpdater_fk(ums_user.getId().toString());
                 int n = desk_infoDAO.insert(sdi);
                 if (n != 1){
@@ -401,24 +402,46 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
 
     //查看所有桌位信息
     @Override
-    public JSONObject showAllDeskInfo() {
+    public JSONObject showAllDeskInfo(Integer desk_type) {
         JsonUtil jsonUtil = getJsonUtilEntity(true);
         List<Scs_desk_info> list = desk_infoDAO.selectAll();
         List<Object> result = new ArrayList<>();
         for (Scs_desk_info sdi: list) {
-            Map<String,Object> map = new HashMap<>();
-            map.put("deskId",sdi.getId().toString());
-            map.put("deskNumber",sdi.getNumber().toString());
-            map.put("deskAlias",sdi.getAlias().toString());
-            map.put("deskMemo",sdi.getMemo().toString());
-            map.put("desk_x",sdi.getDeskx());
-            map.put("desk_y",sdi.getDesky());
-            map.put("desk_z",sdi.getDeskz());
-            map.put("desk_w",sdi.getDeskw());
-            map.put("desk_v",sdi.getDeskv());
-            map.put("desk_q",sdi.getDeskq());
-            map.put("deskValid",sdi.getValid());
-            result.add(map);
+            if (desk_type == -1){
+                if (sdi.getDesk_type() == -1){
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("deskId",sdi.getId().toString());
+                    map.put("deskNumber",sdi.getNumber().toString());
+                    map.put("deskAlias",sdi.getAlias().toString());
+                    map.put("deskMemo",sdi.getMemo().toString());
+                    map.put("desk_x",sdi.getDeskx());
+                    map.put("desk_y",sdi.getDesky());
+                    map.put("desk_z",sdi.getDeskz());
+                    map.put("desk_w",sdi.getDeskw());
+                    map.put("desk_v",sdi.getDeskv());
+                    map.put("desk_q",sdi.getDeskq());
+                    map.put("deskValid",sdi.getValid());
+                    map.put("deskSerialNumber",sdi.getDesk_type());
+                    result.add(map);
+                }
+            }else {
+                if (sdi.getDesk_type() != -1){
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("deskId",sdi.getId().toString());
+                    map.put("deskNumber",sdi.getNumber().toString());
+                    map.put("deskAlias",sdi.getAlias().toString());
+                    map.put("deskMemo",sdi.getMemo().toString());
+                    map.put("desk_x",sdi.getDeskx());
+                    map.put("desk_y",sdi.getDesky());
+                    map.put("desk_z",sdi.getDeskz());
+                    map.put("desk_w",sdi.getDeskw());
+                    map.put("desk_v",sdi.getDeskv());
+                    map.put("deskValid",sdi.getValid());
+                    map.put("desk_q",sdi.getDeskq());
+                    map.put("deskSerialNumber",sdi.getDesk_type());
+                    result.add(map);
+                }
+            }
         }
         jsonUtil.setResult(result);
         return JsonUtil.toJson(jsonUtil);
@@ -444,6 +467,7 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
                 map.put("desk_v",sdi.getDeskv());
                 map.put("desk_q",sdi.getDeskq());
                 map.put("deskValid",sdi.getValid());
+                map.put("deskSerialNumber",sdi.getDesk_type());
                 jsonUtil.setResult(map);
             }else {
                 jsonUtil = getJsonUtilEntity(false);

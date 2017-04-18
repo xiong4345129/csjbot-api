@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
@@ -108,9 +109,10 @@ public class ScsDishController {
     //查询所有桌位
     @RequestMapping(value = "/scs/showAllDeskInfo", method = RequestMethod.GET)
     @ResponseBody
-    public void showAllDeskInfo( HttpServletResponse response)
+    public void showAllDeskInfo(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        ResponseUtil.write(response,scsDishServiceDAO.showAllDeskInfo());
+        int type = Integer.valueOf(request.getParameter("type"));
+        ResponseUtil.write(response,scsDishServiceDAO.showAllDeskInfo(type));
     }
     //查询单个桌位
     @RequestMapping(value = "/scs/showDeskInfo", method = RequestMethod.POST)

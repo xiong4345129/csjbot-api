@@ -26,6 +26,7 @@ public class Scs_desk_info {
     private String creator_fk;
     private Timestamp date_update;
     private Timestamp date_create;
+    private Integer desk_type;
 
     public String getId() {
         return id;
@@ -147,12 +148,19 @@ public class Scs_desk_info {
         this.date_create = date_create;
     }
 
+    public Integer getDesk_type() {
+        return desk_type;
+    }
+
+    public void setDesk_type(Integer desk_type) {
+        this.desk_type = desk_type;
+    }
+
     public Scs_desk_info() {
         super();
     }
 
-    public Scs_desk_info(String id, String number, String alias, String memo, float deskx, float desky, float deskz, float deskw, float deskv, float deskq, int valid, String updater_fk, String creator_fk, Timestamp date_update, Timestamp date_create) {
-        this.id = id;
+    public Scs_desk_info(String number, String alias, String memo, float deskx, float desky, float deskz, float deskw, float deskv, float deskq, int valid, String updater_fk, String creator_fk, Timestamp date_update, Timestamp date_create, Integer desk_type) {
         this.number = number;
         this.alias = alias;
         this.memo = memo;
@@ -167,6 +175,7 @@ public class Scs_desk_info {
         this.creator_fk = creator_fk;
         this.date_update = date_update;
         this.date_create = date_create;
+        this.desk_type = desk_type;
     }
 
     @Override
@@ -187,6 +196,7 @@ public class Scs_desk_info {
                 ", creator_fk='" + creator_fk + '\'' +
                 ", date_update=" + date_update +
                 ", date_create=" + date_create +
+                ", desk_type=" + desk_type +
                 '}';
     }
 }
