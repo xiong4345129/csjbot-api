@@ -91,6 +91,33 @@ public class ScsDishController {
             throws IOException {
         ResponseUtil.write(response,scsDishServiceDAO.showAccessoryS());
     }
-
+    //添加桌位
+    @RequestMapping(value = "/scs/addDeskInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public void addDeskInfo(@RequestBody JSONObject data, HttpServletResponse response)
+            throws IOException {
+        ResponseUtil.write(response,scsDishServiceDAO.addDeskInfo(data));
+    }
+    //删除桌位
+    @RequestMapping(value = "/scs/deleteDeskInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public void deleteDeskInfo(@RequestBody JSONObject data, HttpServletResponse response)
+            throws IOException {
+        ResponseUtil.write(response,scsDishServiceDAO.deleteDeskInfo(data));
+    }
+    //查询所有桌位
+    @RequestMapping(value = "/scs/showAllDeskInfo", method = RequestMethod.GET)
+    @ResponseBody
+    public void showAllDeskInfo( HttpServletResponse response)
+            throws IOException {
+        ResponseUtil.write(response,scsDishServiceDAO.showAllDeskInfo());
+    }
+    //查询单个桌位
+    @RequestMapping(value = "/scs/showDeskInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public void showDeskInfo(@RequestBody JSONObject data, HttpServletResponse response)
+            throws IOException {
+        ResponseUtil.write(response,scsDishServiceDAO.showDeskInfo(data));
+    }
 
 }
