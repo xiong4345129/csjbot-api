@@ -383,8 +383,9 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
         JsonUtil jsonUtil = getJsonUtilEntity(true);
         String[] key = { "deskNumbers"};
         if (CharacterUtil.judgeJsonFormat(key, json)) {
-            JSONArray idArray = json.getJSONArray("deskNumbers");
-            for (Object number: idArray) {
+            String[] str = json.getString("deskNumbers").split("&");
+           // JSONArray idArray = json.getJSONArray("deskNumbers");
+            for (String number: str) {
                 Scs_desk_info sdi = desk_infoDAO.selectDeskByNubmer(number.toString());
                 if (sdi != null){
                     desk_infoDAO.delete(sdi);
