@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -42,24 +43,6 @@ public final class WxPayUtil {
         return src;
     }
 
-    public static void main(String[] args) {
-        final String xml = "" +
-            "<xml><return_code><![CDATA[SUCCESS]]></return_code>\n" +
-            "<return_msg><![CDATA[OK]]></return_msg>\n" +
-            "<appid><![CDATA[wxfec1f26a067221ae]]></appid>\n" +
-            "<mch_id><![CDATA[1236388002]]></mch_id>\n" +
-            "<sub_mch_id><![CDATA[]]></sub_mch_id>\n" +
-            "<nonce_str><![CDATA[8EPOAymW9USusjaS]]></nonce_str>\n" +
-            "<sign><![CDATA[4C61956A1905C6CCB3A05E96DFB0B76C]]></sign>\n" +
-            "<result_code><![CDATA[SUCCESS]]></result_code>\n" +
-            "</xml>";
-        final MediaTypeParser parser = new JacksonXmlParser();
-        final Map<String, String> map = parser.deserializeToMap(xml);
-        String computedSign = computeSign(map, "e77feOYYDJ3cv3xC3h0sGVamm5zaWhyR");
-        String receivedSign = map.get(K_SIGN);
-        System.out.println(computedSign.equals(receivedSign));
-    }
-
     public static boolean checkSign(Map<String, String> params, String key) {
         return checkSign(params, key, params.get(K_SIGN));
     }
@@ -79,10 +62,11 @@ public final class WxPayUtil {
         TreeMap<String, String> treeMap = new TreeMap<>(params);
         String signSrc = treeMap.entrySet().stream()
             // filter out null values and sign entry
-            .filter(e -> !(e.getValue() == null || e.getValue().trim().length() == 0 || K_SIGN.equals(e.getKey())))
+            .filter(e -> !(e.getValue() == null || e.getValue().trim().length() == 0))
+            .filter(e -> !K_SIGN.equals(e.getKey()))
             .map(e -> e.getKey() + "=" + e.getValue())
             .collect(Collectors.joining("&"));
-        signSrc = signSrc + "&" + K_API_KEY + "=" + key;
+        signSrc = signSrc + "&" + K_API_KEY + "=" + key; // key need to be at the end
         String sign = null;
         try {
             sign = ChecksumGen.compute(ChecksumGen.MD5, signSrc, UTF_8).toUpperCase();

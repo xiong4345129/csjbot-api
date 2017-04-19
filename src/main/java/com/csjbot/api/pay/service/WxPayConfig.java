@@ -6,21 +6,23 @@ import java.util.Properties;
 
 public class WxPayConfig {
 
-    public static final Integer MIN_MINUTES = 5;
+    public static final int MIN_MINUTES = 5;
     public static final String K_SERVER_IP = "server.ip.public";
     public static final String K_EXPIRE_MIN = "pay.wx.time.expire.min";
     public static final String K_SYNC_MIN = "pay.wx.time.sync.min";
+    public static final String K_SYNC_SCH_MIN = "pay.wx.time.sync.schedule.min";
+    public static final String K_QUEUE_SIZE = "pay.wx.query.queue.size";
     public static final String K_ORDER_URL = "pay.wx.order.url";
     public static final String K_QUERY_URL = "pay.wx.query.url";
     public static final String K_CLOSE_URL = "pay.wx.close.url";
     public static final String K_NOTIFY_URL = "pay.wx.notify.url";
 
-    public static final Integer EXPIRE_MIN_DEFAULT = 120;
 
     private final Properties prop;
     private final String serverIp;
-    private final Integer expireMinutes, syncMinutes;
+    private final int expireMinutes, syncMinutes, scheduleMinutes;
     private final URI orderUrl, queryUrl, closeUrl, notifyUrl;
+    private final int queryQueueCapacity;
 
     public WxPayConfig(Properties prop) {
         System.out.println("init WxConfig");
@@ -31,10 +33,10 @@ public class WxPayConfig {
         closeUrl = getUri(getValueStrict(K_CLOSE_URL));
         notifyUrl = getUri(getValueStrict(K_NOTIFY_URL));
         Integer expireMinSet = getValueAsInteger(K_EXPIRE_MIN);
-        this.expireMinutes = (expireMinSet == null || expireMinSet < MIN_MINUTES) ?
-            EXPIRE_MIN_DEFAULT : expireMinSet;
-        Integer syncMinSet = getValueAsInteger(K_SYNC_MIN);
-        this.syncMinutes = (syncMinSet == null) ? MIN_MINUTES : syncMinSet;
+        this.expireMinutes = (expireMinSet == null || expireMinSet < MIN_MINUTES) ? 120: expireMinSet;
+        this.syncMinutes = getValueAsInteger(K_SYNC_MIN, MIN_MINUTES);
+        this.scheduleMinutes =getValueAsInteger(K_SYNC_SCH_MIN, MIN_MINUTES);
+        this.queryQueueCapacity = getValueAsInteger(K_QUEUE_SIZE, 1000);
     }
 
     public String getValueStrict(String key) {
@@ -48,8 +50,12 @@ public class WxPayConfig {
     }
 
     public Integer getValueAsInteger(String key) {
+        return getValueAsInteger(key, null);
+    }
+
+    public Integer getValueAsInteger(String key, Integer defaultIfNull) {
         String val = prop.getProperty(key);
-        return val == null ? null : Integer.parseInt(val);
+        return val == null ? defaultIfNull : Integer.parseInt(val);
     }
 
     public String getServerIP() {
@@ -72,12 +78,20 @@ public class WxPayConfig {
         return notifyUrl;
     }
 
-    public Integer getExpireMinutes() {
+    public int getExpireMinutes() {
         return expireMinutes;
     }
 
-    public Integer getSyncMinutes() {
+    public int getSyncMinutes() {
         return syncMinutes;
+    }
+
+    public int getScheduleMinutes() {
+        return scheduleMinutes;
+    }
+
+    public int getQueryQueueCapacity() {
+        return queryQueueCapacity;
     }
 
     private static boolean isEmpty(String str) {

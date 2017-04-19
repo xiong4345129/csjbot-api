@@ -34,4 +34,20 @@ public class WxPayDBServiceImpl extends OrderPayDBServiceImpl implements WxPayDB
     public boolean wxPayRecordExists(String orderId) {
         return wxPayMapper.exists(orderId);
     }
+
+    // @Override
+    // public boolean newWxPayOrder(WxPayDataWrapper dataWrapper) {
+    //     newOrderPayRecord(dataWrapper.getOrderPay());
+    //     newWxPayRecord(dataWrapper.getWxDetail());
+    //     insertOrderItems(dataWrapper.getItems());
+    //     return true;
+    // }
+    //
+    //
+    // public boolean newWxPayNewOrder(WxPayDataWrapper dataWrapper) {
+    //     newOrderPayRecord(dataWrapper.getOrderPay());
+    //     newWxPayRecord(dataWrapper.getWxDetail());
+    //     insertOrderItems(dataWrapper.getItems());
+    //     return true;
+    // }
 }

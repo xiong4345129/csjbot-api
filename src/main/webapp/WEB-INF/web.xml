@@ -38,6 +38,8 @@
             <param-value>classpath*:spring-servlet.xml</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
+        <!--todo-->
+        <async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
         <servlet-name>api</servlet-name>

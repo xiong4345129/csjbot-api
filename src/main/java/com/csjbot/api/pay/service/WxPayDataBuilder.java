@@ -133,9 +133,9 @@ public class WxPayDataBuilder implements WxPayDataService {
         params.put(K_ATTACH, orderPseudoNo);
 
         WxPayDataWrapper data = computeSignAndWrapData(params);
-        data.setOrderPayData(newOrderPay(orderId, orderTime, orderPseudoNo,
+        data.setOrderPay(newOrderPay(orderId, orderTime, orderPseudoNo,
             clientReq.getRobotUid(), clientReq.getRobotModel(), totalFee));
-        data.setWxDetailData(newWxDetail(orderId, WxTradeType.NATIVE,
+        data.setWxDetail(newWxDetail(orderId, WxTradeType.NATIVE,
             productId, totalFee, timeStart, timeExpire));
         data.setItems(items);
         return data;

@@ -1,12 +1,13 @@
 package com.csjbot.api.pay.model;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
 public class WxPayDataWrapper {
     private boolean empty;
-    private PmsOrderPay orderPayData;
-    private PmsPayDetailWx wxDetailData;
+    private PmsOrderPay orderPay;
+    private PmsPayDetailWx wxDetail;
     private List<PmsOrderItem> items;
     private Map<String, String> wxParams;
 
@@ -24,20 +25,20 @@ public class WxPayDataWrapper {
 
     public void setEmpty(boolean empty) { this.empty = empty; }
 
-    public PmsOrderPay getOrderPayData() {
-        return orderPayData;
+    public PmsOrderPay getOrderPay() {
+        return orderPay;
     }
 
-    public void setOrderPayData(PmsOrderPay orderPayData) {
-        this.orderPayData = orderPayData;
+    public void setOrderPay(PmsOrderPay orderPay) {
+        this.orderPay = orderPay;
     }
 
-    public PmsPayDetailWx getWxDetailData() {
-        return wxDetailData;
+    public PmsPayDetailWx getWxDetail() {
+        return wxDetail;
     }
 
-    public void setWxDetailData(PmsPayDetailWx wxDetailData) {
-        this.wxDetailData = wxDetailData;
+    public void setWxDetail(PmsPayDetailWx wxDetail) {
+        this.wxDetail = wxDetail;
     }
 
     public List<PmsOrderItem> getItems() {
@@ -55,4 +56,21 @@ public class WxPayDataWrapper {
     public void setWxParams(Map<String, String> wxParams) {
         this.wxParams = wxParams;
     }
+
+    public void syncRemote() {
+        // todo
+    }
+
+    public boolean isClosed() {
+        return orderPay.isClosed();
+    }
+
+    public ZonedDateTime lastSync() {
+        return wxDetail.getSyncTime();
+    }
+
+    public boolean shouldSync(){
+        return false; // todo
+    }
+
 }

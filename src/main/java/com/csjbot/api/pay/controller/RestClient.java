@@ -17,7 +17,6 @@ public class RestClient {
     }
 
     public ResponseEntity<String> doPost(URI uri,
-
                                          String body,
                                          MediaType mediaType) {
         HttpHeaders headers = new HttpHeaders();
