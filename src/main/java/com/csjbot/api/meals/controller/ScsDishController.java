@@ -1,6 +1,7 @@
 package com.csjbot.api.meals.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.csjbot.api.common.util.FileZipUtil;
 import com.csjbot.api.common.util.ResponseUtil;
 import com.csjbot.api.meals.service.ScsDishServiceDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,6 +128,7 @@ public class ScsDishController {
     public void downFile(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         File file = new File(request.getParameter("filePath")); //要下载的文件绝对路径
+        FileZipUtil.assignPermission(file);
         InputStream ins = new BufferedInputStream(new FileInputStream(request.getParameter("filePath")));
         byte [] buffer = new byte[ins.available()];
         ins.read(buffer);

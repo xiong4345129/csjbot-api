@@ -65,7 +65,7 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
             }
             if (saList.size() > 0 ){
                 dish.put("dishImageName",saList.get(0).getAlias_name());
-                dish.put("dishImageUrl",FileZipUtil.PATH+"8080/api/scs/downFile?filePath="+saList.get(0).getLocation().toString()+"&fileName="+saList.get(0).getAlias_name().toString());
+                dish.put("dishImageUrl",FileZipUtil.PATH+":8080/api/scs/downFile?filePath="+saList.get(0).getLocation().toString()+"&fileName="+saList.get(0).getAlias_name().toString());
             }else {
                 dish.put("dishImageName","");
                 dish.put("dishImageUrl","");
@@ -329,7 +329,7 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
             Map<String,Object> demo = new HashMap<>();
             demo.put("fileName",sa.getAlias_name().toString());
             demo.put("fileType",sa.getFile_type().toString());
-            demo.put("fileUrl", FileZipUtil.PATH+"8080/api/scs/downFile?filePath="+sa.getLocation().toString()+"&fileName="+sa.getAlias_name().toString());
+            demo.put("fileUrl", FileZipUtil.PATH+":8080/api/scs/downFile?filePath="+sa.getLocation().toString()+"&fileName="+sa.getAlias_name().toString());
             ace.add(demo);
         }
         jsonUtil.setResult(ace);
