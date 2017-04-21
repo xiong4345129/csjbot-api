@@ -2,6 +2,7 @@ package com.csjbot.api.meals.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.csjbot.api.common.util.FileZipUtil;
 import com.csjbot.api.common.util.JsonUtil;
 import com.csjbot.api.common.util.RandomUtil;
 import com.csjbot.api.meals.dao.Scs_desk_infoDAO;
@@ -64,7 +65,7 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
             }
             if (saList.size() > 0 ){
                 dish.put("dishImageName",saList.get(0).getAlias_name());
-                dish.put("dishImageUrl",saList.get(0).getLocation());
+                dish.put("dishImageUrl",FileZipUtil.PATH+"8080/api/scs/downFile?filePath="+saList.get(0).getLocation().toString()+"&fileName="+saList.get(0).getAlias_name().toString());
             }else {
                 dish.put("dishImageName","");
                 dish.put("dishImageUrl","");
@@ -328,7 +329,7 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
             Map<String,Object> demo = new HashMap<>();
             demo.put("fileName",sa.getAlias_name().toString());
             demo.put("fileType",sa.getFile_type().toString());
-            demo.put("fileUrl",sa.getLocation().toString());
+            demo.put("fileUrl", FileZipUtil.PATH+"8080/api/scs/downFile?filePath="+sa.getLocation().toString()+"&fileName="+sa.getAlias_name().toString());
             ace.add(demo);
         }
         jsonUtil.setResult(ace);
@@ -341,10 +342,10 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
         JsonUtil jsonUtil = getJsonUtilEntity(true);
         String[] key = { "userName","deskNumber","deskAlias","deskMemo","desk_x","desk_y","desk_z","desk_w","desk_v","desk_q","deskValid","deskSerialNumber" };
         if (CharacterUtil.judgeJsonFormat(key, json)) {
-            Scs_desk_info sdi = desk_infoDAO.selectDeskByNubmer(json.getString("deskNumber"));
+           // Scs_desk_info sdi = desk_infoDAO.selectDeskByNubmer(json.getString("deskNumber"));
             Ums_user ums_user = ums_userDAO.findUserByName(json.getString("userName"));
-            if (sdi == null&&ums_user != null){
-                sdi = new Scs_desk_info();
+            if (ums_user != null){
+                Scs_desk_info sdi = new Scs_desk_info();
                 sdi.setId(RandomUtil.generateString(32));
                 sdi.setNumber(json.getString("deskNumber"));
                 sdi.setAlias(json.getString("deskAlias"));
@@ -381,17 +382,23 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
     @Override
     public JSONObject deleteDeskInfo(JSONObject json) {
         JsonUtil jsonUtil = getJsonUtilEntity(true);
-        String[] key = { "deskNumbers"};
+        String[] key = { "deskNumbers","type"};
+
         if (CharacterUtil.judgeJsonFormat(key, json)) {
             String[] str = json.getString("deskNumbers").split("&");
            // JSONArray idArray = json.getJSONArray("deskNumbers");
             for (String number: str) {
-                Scs_desk_info sdi = desk_infoDAO.selectDeskByNubmer(number.toString());
-                if (sdi != null){
-                    desk_infoDAO.delete(sdi);
-                }else {
-                    jsonUtil = getJsonUtilEntity(false);
-                    jsonUtil.setMessage("The desk does not exist!");
+                List<Scs_desk_info> sdiList = desk_infoDAO.selectDeskByNubmer(number.toString());
+                for (Scs_desk_info sdi:sdiList) {
+                    if (json.getInteger("type") == -1){
+                        if (sdi.getDesk_type() == -1 ){
+                            desk_infoDAO.delete(sdi);
+                        }
+                    }else {
+                        if (sdi.getDesk_type() != -1 ){
+                            desk_infoDAO.delete(sdi);
+                        }
+                    }
                 }
             }
         }else {
@@ -453,23 +460,28 @@ public class ScsDishServiceDAOImpl implements ScsDishServiceDAO{
     public JSONObject showDeskInfo(JSONObject json) {
         JsonUtil jsonUtil = getJsonUtilEntity(true);
         String[] key = { "deskNumber"};
+        List<Object> list = new ArrayList<>();
         if (CharacterUtil.judgeJsonFormat(key, json)) {
-            Scs_desk_info sdi = desk_infoDAO.selectDeskByNubmer(json.getString("deskNumber"));
-            if (sdi != null){
-                Map<String,Object> map = new HashMap<>();
-                map.put("deskId",sdi.getId().toString());
-                map.put("deskNumber",sdi.getNumber().toString());
-                map.put("deskAlias",sdi.getAlias().toString());
-                map.put("deskMemo",sdi.getMemo().toString());
-                map.put("desk_x",sdi.getDeskx());
-                map.put("desk_y",sdi.getDesky());
-                map.put("desk_z",sdi.getDeskz());
-                map.put("desk_w",sdi.getDeskw());
-                map.put("desk_v",sdi.getDeskv());
-                map.put("desk_q",sdi.getDeskq());
-                map.put("deskValid",sdi.getValid());
-                map.put("deskSerialNumber",sdi.getDesk_type());
-                jsonUtil.setResult(map);
+            List<Scs_desk_info> sdiList = desk_infoDAO.selectDeskByNubmer(json.getString("deskNumber"));
+            if (sdiList.size() > 0){
+                for (Scs_desk_info sdi: sdiList) {
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("deskId",sdi.getId().toString());
+                    map.put("deskNumber",sdi.getNumber().toString());
+                    map.put("deskAlias",sdi.getAlias().toString());
+                    map.put("deskMemo",sdi.getMemo().toString());
+                    map.put("desk_x",sdi.getDeskx());
+                    map.put("desk_y",sdi.getDesky());
+                    map.put("desk_z",sdi.getDeskz());
+                    map.put("desk_w",sdi.getDeskw());
+                    map.put("desk_v",sdi.getDeskv());
+                    map.put("desk_q",sdi.getDeskq());
+                    map.put("deskSerialNumber",sdi.getDesk_type());
+                    map.put("deskValid",sdi.getValid());
+                    list.add(map);
+                }
+
+                jsonUtil.setResult(list);
             }else {
                 jsonUtil = getJsonUtilEntity(false);
                 jsonUtil.setMessage("Error from json format!");

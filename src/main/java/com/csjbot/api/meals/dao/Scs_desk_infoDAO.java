@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface Scs_desk_infoDAO extends BaseDAO<Scs_desk_info>{
 
-    Scs_desk_info selectDeskByNubmer(String number);
+    List<Scs_desk_info> selectDeskByNubmer(String number);
 }
