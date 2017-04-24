@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.robot.dao.Sys_data_dictionaryDAO">
+    <select id="findDataDictionaryById" resultType="com.csjbot.api.robot.model.Sys_data_dictionary">
+       select * from sys_data_dictionary where data_fk=#{data_fk} and memo=#{memo}
+    </select>
+</mapper>
