@@ -23,6 +23,8 @@ import java.util.zip.ZipOutputStream;
  */
 public class FileZipUtil {
 
+	public static String PATH = "118.178.188.27";
+
 	/**
 	 * 功能:压缩多个文件成一个zip文件
 	 * 
@@ -86,7 +88,7 @@ public class FileZipUtil {
 		FileZipUtil.zipFiles(srcfiles, zipfile);
 		assignPermission(zipfile);
 		map.put("zipName", zipName + ".zip");
-		map.put("zipUrl", "118.178.188.27:8001/zip/" + zipName + ".zip");
+		map.put("zipUrl", FileZipUtil.PATH+":8001/zip/" + zipName + ".zip");
 		return map;
 	}
 

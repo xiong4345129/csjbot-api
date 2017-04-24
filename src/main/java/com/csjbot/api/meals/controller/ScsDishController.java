@@ -1,6 +1,7 @@
 package com.csjbot.api.meals.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.csjbot.api.common.util.FileZipUtil;
 import com.csjbot.api.common.util.ResponseUtil;
 import com.csjbot.api.meals.service.ScsDishServiceDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Created by Zhangyangyang on 2017/4/13.
@@ -121,5 +122,27 @@ public class ScsDishController {
             throws IOException {
         ResponseUtil.write(response,scsDishServiceDAO.showDeskInfo(data));
     }
+    //下载文件接口
+    @RequestMapping(value = "/scs/downFile", method = RequestMethod.GET)
+    @ResponseBody
+    public void downFile(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        File file = new File(request.getParameter("filePath")); //要下载的文件绝对路径
+        FileZipUtil.assignPermission(file);
+        InputStream ins = new BufferedInputStream(new FileInputStream(request.getParameter("filePath")));
+        byte [] buffer = new byte[ins.available()];
+        ins.read(buffer);
+        ins.close();
+
+        response.reset();
+        response.addHeader("Content-Disposition", "attachment;filename=" + new String(request.getParameter("fileName").getBytes()));
+        response.addHeader("Content-Length", "" + file.length());
+        OutputStream ous = new BufferedOutputStream(response.getOutputStream());
+        response.setContentType("application/octet-stream");
+        ous.write(buffer);
+        ous.flush();
+        ous.close();
+    }
+
 
 }
