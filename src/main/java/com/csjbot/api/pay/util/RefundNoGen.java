@@ -2,18 +2,17 @@ package com.csjbot.api.pay.util;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class OrderIdGen {
-
+public class RefundNoGen {
     private static final AtomicInteger atomicInteger = new AtomicInteger();
     private static final String DEL = "-";
-    public static final String regex = "[0-9]{7}-[0-9]{4}(-[0-9]{3}){3}";  // example: 1491442-4935-000-001-816
+    public static final String regex = "[0-9]{7}-[0-9]{4}-[0-9]{4}";  // example: 1491442-4935-0001
 
     public static boolean check(String val) {
         return val != null && val.matches(regex);
     }
 
     public static String next() {
-        return genTime() + DEL + genCnt() + DEL + RandomGen.randStr(3, RandomGen.NUMBER);
+        return genTime() + DEL + genCnt()+RandomGen.randStr(1, RandomGen.NUMBER);
     }
 
     private static String genTime() {
@@ -22,16 +21,14 @@ public final class OrderIdGen {
     }
 
     private static String genCnt() {
-        int cnt = atomicInteger.incrementAndGet() % 1000000;
-        String cntStr = String.format("%06d", cnt);
-        return cntStr.substring(0, 3) + DEL + cntStr.substring(3, 6);
+        int cnt = atomicInteger.incrementAndGet() % 1000;
+        return String.format("%03d", cnt);
     }
 
     public static void main(String[] args) {
-        System.out.println(Integer.MAX_VALUE);
-        for (int i = 0; i < 10; i++) {
-            String orderId = next();
-            System.out.println(orderId+" "+check(orderId));
+        for (int i =0; i< 5;i++){
+            String no = next();
+            System.out.println(no+" "+check(no));
         }
     }
 }

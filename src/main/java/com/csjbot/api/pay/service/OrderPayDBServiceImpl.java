@@ -1,12 +1,10 @@
 package com.csjbot.api.pay.service;
 
-import com.csjbot.api.pay.dao.PmsOrderItemMapper;
-import com.csjbot.api.pay.dao.PmsOrderPayCustomMapper;
-import com.csjbot.api.pay.dao.PmsOrderPayHttpLogMapper;
-import com.csjbot.api.pay.dao.PmsOrderPayMapper;
+import com.csjbot.api.pay.dao.*;
 import com.csjbot.api.pay.model.PmsOrderItem;
 import com.csjbot.api.pay.model.PmsOrderPay;
 import com.csjbot.api.pay.model.PmsOrderPayHttpLog;
+import com.csjbot.api.pay.model.PmsRefund;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +23,8 @@ public class OrderPayDBServiceImpl implements OrderPayDBService {
     private PmsOrderPayHttpLogMapper httpLogMapper;
     @Autowired
     private PmsOrderPayCustomMapper customMapper;
+    @Autowired
+    private PmsRefundMapper refundMapper;
 
     public OrderPayDBServiceImpl() {
         System.out.println("init OrderPayDBServiceImpl"); // todo initialized how many times ???
@@ -66,6 +66,31 @@ public class OrderPayDBServiceImpl implements OrderPayDBService {
     @Override
     public int insertOrderItems(List<PmsOrderItem> items) {
         return itemMapper.insertList(items);
+    }
+
+    @Override
+    public int newRefundRecord(PmsRefund record) {
+        return refundMapper.insert(record);
+    }
+
+    @Override
+    public int updateRefundRecord(PmsRefund record) {
+        return refundMapper.update(record);
+    }
+
+    @Override
+    public PmsRefund getRefundRecord(String refundNo) {
+        return refundMapper.get(refundNo);
+    }
+
+    @Override
+    public boolean refundRecordExists(String orderId) {
+        return refundMapper.count(orderId) > 0;
+    }
+
+    @Override
+    public int getRefundedTotalFee(String orderId) {
+        return refundMapper.sum(orderId);
     }
 
     @Override

@@ -3,6 +3,56 @@ package com.csjbot.api.pay.model;
 import java.time.ZonedDateTime;
 
 public class WxClientResponse {
+    //
+    // public static class Refund {
+    //     // private String refundNo;
+    //     private Integer refundFee;
+    //     private RefundStatus refundStatus;
+    //     private ZonedDateTime refundTime;
+    //     private String wxRefundId;
+    //
+    //     public Refund() { }
+    //
+    //     public Refund(Integer refundFee, RefundStatus refundStatus, ZonedDateTime refundTime, String wxRefundId) {
+    //         this.refundFee = refundFee;
+    //         this.refundStatus = refundStatus;
+    //         this.refundTime = refundTime;
+    //         this.wxRefundId = wxRefundId;
+    //     }
+    //
+    //     public Integer getRefundFee() {
+    //         return refundFee;
+    //     }
+    //
+    //     public void setRefundFee(Integer refundFee) {
+    //         this.refundFee = refundFee;
+    //     }
+    //
+    //     public RefundStatus getRefundStatus() {
+    //         return refundStatus;
+    //     }
+    //
+    //     public void setRefundStatus(RefundStatus refundStatus) {
+    //         this.refundStatus = refundStatus;
+    //     }
+    //
+    //     public ZonedDateTime getRefundTime() {
+    //         return refundTime;
+    //     }
+    //
+    //     public void setRefundTime(ZonedDateTime refundTime) {
+    //         this.refundTime = refundTime;
+    //     }
+    //
+    //     public String getWxRefundId() {
+    //         return wxRefundId;
+    //     }
+    //
+    //     public void setWxRefundId(String wxRefundId) {
+    //         this.wxRefundId = wxRefundId;
+    //     }
+    // }
+
     private String id;
 
     private String orderId;
@@ -19,9 +69,17 @@ public class WxClientResponse {
     private ZonedDateTime payTimeEnd;
     private Integer payCashFee;
     private Integer payCouponFee;
-    private Integer payRefundFee;
+    private Integer payRefundFee ; // not use
     private String wxOpenId;
     private String wxTransactionId;
+
+    private String refundStatus;
+    private Boolean hasRefund;
+    private String refundNo;
+    private Integer refundFee;
+    private Integer refundTotalFee;
+    private String wxRefundId;
+    // private List<Refund> refundList;
 
     private String errCode;
     private String errDesc;
@@ -50,23 +108,9 @@ public class WxClientResponse {
         this.id = id;
     }
 
-    public WxClientResponse(String errCode, String errDesc, String remark) {
-        this.errCode = errCode;
-        this.errDesc = errDesc;
-        this.remark = remark;
-    }
-
-    public WxClientResponse(String orderId,
-                            OrderStatus orderStatus, PayStatus payStatus,
-                            String errCode, String errDesc, String remark,
-                            String id) {
+    public WxClientResponse(String orderId, String refundNo) {
         this.orderId = orderId;
-        this.orderStatus = orderStatus;
-        this.payStatus = payStatus;
-        this.errCode = errCode;
-        this.errDesc = errDesc;
-        this.remark = remark;
-        this.id = id;
+        this.refundNo = refundNo;
     }
 
     public String getId() {
@@ -227,5 +271,62 @@ public class WxClientResponse {
 
     public void setWxTransactionId(String wxTransactionId) {
         this.wxTransactionId = wxTransactionId;
+    }
+
+    public String getRefundStatus() {
+        return refundStatus;
+    }
+
+    public void setRefundStatus(RefundStatus refundStatus) {
+        this.refundStatus = refundStatus.name();
+    }
+
+    public Boolean getHasRefund() {
+        return hasRefund;
+    }
+
+    public void setHasRefund(Boolean hasRefund) {
+        this.hasRefund = hasRefund;
+    }
+
+    public Integer getRefundTotalFee() {
+        return refundTotalFee;
+    }
+
+    public void setRefundTotalFee(Integer refundTotalFee) {
+        this.refundTotalFee = refundTotalFee;
+    }
+
+    // public void setRefundList(List<Refund> refundList) {
+    //     this.refundList = refundList;
+    // }
+
+
+    public void setRefundStatus(String refundStatus) {
+        this.refundStatus = refundStatus;
+    }
+
+    public String getRefundNo() {
+        return refundNo;
+    }
+
+    public void setRefundNo(String refundNo) {
+        this.refundNo = refundNo;
+    }
+
+    public Integer getRefundFee() {
+        return refundFee;
+    }
+
+    public void setRefundFee(Integer refundFee) {
+        this.refundFee = refundFee;
+    }
+
+    public String getWxRefundId() {
+        return wxRefundId;
+    }
+
+    public void setWxRefundId(String wxRefundId) {
+        this.wxRefundId = wxRefundId;
     }
 }

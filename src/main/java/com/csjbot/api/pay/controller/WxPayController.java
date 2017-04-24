@@ -20,6 +20,7 @@ import javax.annotation.PreDestroy;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -29,9 +30,9 @@ import static com.csjbot.api.pay.controller.WxPayControllerHelper.*;
 import static com.csjbot.api.pay.model.ReStatus.isSuccess;
 import static com.csjbot.api.pay.service.WxPayParamName.*;
 import static org.springframework.http.HttpStatus.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.TEXT_XML_VALUE;
+import static org.springframework.http.MediaType.*;
 
+// todo 1.use object injection in controller 2.create object wrap wx result map
 @RestController
 @RequestMapping("/pay/wx")
 public class WxPayController {
@@ -62,7 +63,7 @@ public class WxPayController {
     private final ThreadPoolTaskExecutor queryExecutor;
     private final ThreadPoolTaskScheduler queryScheduler;
     private final BlockingQueue<String> queryQueue;
-    private final AtomicBoolean isQueryCheckRunning = new AtomicBoolean(false);
+    private final AtomicBoolean isQueryScheduleRunning = new AtomicBoolean(false);
 
     @Autowired
     public WxPayController(WxPayConfig wxPayConfig, WxPayControllerHelper helper,
@@ -86,26 +87,25 @@ public class WxPayController {
     public void start() {
         LOGGER.debug("PostConstruct");
         queryScheduler.scheduleAtFixedRate(() -> {
-            if (isQueryCheckRunning.compareAndSet(false, true)) {
+            if (isQueryScheduleRunning.compareAndSet(false, true)) {
                 final long checkSize = queryQueue.size(); // size will change during for-loop, record it beforehand
                 LOGGER.debug("query check size " + checkSize);
                 for (int i = 0; i < checkSize; i++) {
                     final String orderId = queryQueue.poll(); // orders that are closed will only be removed here
                     if (orderId == null) break; // should not happen
                     final PmsOrderPay orderPay = dbService.getOrderPayRecord(orderId); // todo
-                    final PmsPayDetailWx wxDetail = dbService.getWxPayRecord(orderId);
-                    if (orderPay == null || wxDetail == null) {
-                        LOGGER.error("empty wrapper in queue"); // should not happen
+                    if (orderPay == null) {
+                        LOGGER.error(orderId + " db record not found"); // should not happen
                     } else {
                         if (!orderPay.isClosed()) {
                             queryQueue.add(orderId); // put back to queue end
-                            if (isSyncTimeSuitable(wxDetail)) {
-                                queryExecutor.execute(() -> syncRemote(orderPay, wxDetail));
+                            if (isSyncTimeSuitable(orderPay)) {
+                                queryExecutor.execute(() -> syncRemote(orderPay));
                             }
                         }
                     }
                 }
-                isQueryCheckRunning.set(false);
+                isQueryScheduleRunning.set(false);
             }
         }, 1000 * 60 * config.getScheduleMinutes());
     }
@@ -118,25 +118,29 @@ public class WxPayController {
     }
 
     private boolean isNewOrder(ZonedDateTime createTime) {
-        return WxPayUtil.minutesBetween(createTime, ZonedDateTime.now())
-            <= WxPayConfig.MIN_MINUTES + 1; // wx requires 5 min, add 1 more here for simple use
+        long minSinceCreate = WxPayUtil.minutesBetween(createTime, ZonedDateTime.now());
+        return minSinceCreate <= WxPayConfig.MIN_MINUTES + 1; // wx requires 5 min, add 1 more here for simple use
     }
 
-    private boolean isSyncTimeSuitable(PmsPayDetailWx wxDetail) {
-        final ZonedDateTime lastSync = wxDetail.getSyncTime();
+    private boolean isSyncTimeSuitable(PmsOrderPay orderPay) {
+        final ZonedDateTime lastSync = orderPay.getSyncTime();
         final ZonedDateTime now = ZonedDateTime.now();
         if (lastSync == null) {
-            return isNewOrder(wxDetail.getCreateTime());
+            return true;
         } else {
             return WxPayUtil.minutesBetween(lastSync, now) > config.getSyncMinutes();
         }
+    }
+
+    private boolean syncRemote(PmsOrderPay orderPay) {
+        return syncRemote(orderPay, dbService.getWxPayRecord(orderPay.getOrderId()));
     }
 
     // todo refactor code, schedule this
     private boolean syncRemote(PmsOrderPay orderPay, PmsPayDetailWx wxDetail) {
         if (orderPay.isClosed()) return false; // if closed, don't check again
         final String orderId = orderPay.getOrderId();
-        WxPayDataWrapper wrapper = dataBuilder.buildQueryData(getQueryId(orderId, wxDetail.getTransactionId()));
+        WxPayDataWrapper wrapper = dataBuilder.buildQueryData(orderId);
         if (!wrapper.isEmpty()) {
             String reqXml = helper.serializeWxXml(wrapper.getWxParams());
             logHttp(orderId, OrderPayOp.QUERY_PAY, true, config.getQueryUrl().toString(), reqXml);
@@ -148,35 +152,42 @@ public class WxPayController {
             }
             LOGGER.debug("new wx query result for order " + orderId + " " + resBody);
             logHttp(orderId, OrderPayOp.QUERY_PAY, false, config.getQueryUrl().toString(), resBody);
-            Map<String, String> wxQueryResMap = helper.deserializeWxXml(resBody);
-            if (wxQueryResMap == null || !dataBuilder.checkSign(wxQueryResMap)
-                || !isSuccess(wxQueryResMap.get(K_RETURN_CODE))) {
+            Map<String, String> resMap = helper.deserializeWxXml(resBody);
+            if (resMap == null || !dataBuilder.checkSign(resMap)
+                || !isSuccess(resMap.get(K_RETURN_CODE))) {
                 LOGGER.error("query wx for order " + orderId + " return error or fail");
                 return false;
             }
-            final String resultCode = wxQueryResMap.get(K_RESULT_CODE);
-            final String tradeState = wxQueryResMap.get(K_TRADE_STATE);
-            final String tradeStateDesc = wxQueryResMap.get(K_TRADE_STATE_DESC);
+            final String resultCode = resMap.get(K_RESULT_CODE);
+            final String tradeState = resMap.get(K_TRADE_STATE);
+            final String tradeStateDesc = resMap.get(K_TRADE_STATE_DESC);
             LOGGER.info("query wx for order " + orderId + " resultCode=" + resultCode +
                 " tradeState=" + tradeState + " tradeStateDesc=" + tradeStateDesc);
-            if (!isSuccess(resultCode) || tradeState == null) return false;
             // update wx detail
-            wxDetail.setSyncTime(syncTime);
             wxDetail.setTradeState(tradeState);
             wxDetail.setTradeStateDesc(tradeStateDesc);
-            TradeState state = TradeState.valueOf(tradeState);
-            if (TradeState.SUCCESS == state) fillPayResultData(wxDetail, wxQueryResMap);
+            if (isSuccess(resultCode) && tradeState != null) {
+                TradeState state = TradeState.valueOf(tradeState);
+                if (TradeState.SUCCESS == state) {
+                    if (tradeStateDesc == null) wxDetail.setTradeState("已支付");
+                    fillPayResultData(wxDetail, resMap);
+                }
+                PayStatus newPayStatus =
+                    mapFromTradeState(state, WxPayUtil.isLater(syncTime, wxDetail.getTimeExpire()));
+                if (newPayStatus != null) {
+                    orderPay.setPayStatus(newPayStatus);
+                    orderPay.setCloseTime(ZonedDateTime.now());
+                    orderPay.setClosed(true);
+                    orderPay.setRemark(newPayStatus + " by query");
+                }
+            } else {
+                orderPay.setPayErrCode(resMap.get(K_ERR_CODE));
+                orderPay.setPayErrDesc(resMap.get(K_ERR_CODE_DES));
+            }
             dbService.updateWxPayRecord(wxDetail);
             // update orderpay if need
-            PayStatus newPayStatus =
-                mapFromTradeState(state, WxPayUtil.isLater(syncTime, wxDetail.getTimeExpire()));
-            if (newPayStatus != null) {
-                orderPay.setPayStatus(newPayStatus);
-                orderPay.setCloseTime(ZonedDateTime.now());
-                orderPay.setClosed(true);
-                orderPay.setRemark(newPayStatus + " by query");
-                dbService.updateOrderPayRecord(orderPay);
-            }
+            orderPay.setSyncTime(syncTime);
+            dbService.updateOrderPayRecord(orderPay);
         }
         return true;
     }
@@ -184,12 +195,14 @@ public class WxPayController {
     /**
      * 二维码支付下单请求：设备->后台
      */
-    @RequestMapping(value = "/order", method = RequestMethod.POST, consumes = APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/order", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<String> orderQR(@RequestBody String orderReqBody) {
         LOGGER.debug("order request " + orderReqBody);
-        WxClientRequest orderReq = helper.deserializeClientJson(orderReqBody, WxClientRequest.class);
+        WxClientRequest orderReq = helper.deserializeClientJson(orderReqBody);
         if (orderReq == null)
             return helper.clientErrResponse(BAD_REQUEST, "JSON解析失败");
+        if (orderReq.getOrderList() == null || orderReq.getOrderList().size() == 0)
+            return helper.clientErrResponse(BAD_GATEWAY, "商品列表为空");
         final String reqId = orderReq.getId();
         final String pseudoNo = orderReq.getOrderPseudoNo();
         if (dbService.orderPayRecordExists(pseudoNo, orderReq.getRobotUid()))
@@ -272,7 +285,7 @@ public class WxPayController {
     /**
      * 微信平台异步通知结果：微信->后台
      */
-    @RequestMapping(value = "/callback", method = RequestMethod.POST, consumes = TEXT_XML_VALUE)
+    @PostMapping(value = "/callback", consumes = TEXT_XML_VALUE, produces = TEXT_XML_VALUE)
     public ResponseEntity<String> callback(@RequestBody String callbackBody) {
         LOGGER.debug("pay callback\n" + callbackBody);
         // check sign & return status
@@ -285,6 +298,8 @@ public class WxPayController {
             if (!dbService.wxPayRecordExists(recOrderId)) LOGGER.error("no wx detail found for " + recOrderId);
             return helper.wxCallbackFailResponse();
         }
+        // log
+        logHttp(recOrderId, OrderPayOp.NOTIFY_PAY_RESULT, true, config.getNotifyUrl(), callbackBody);
         // get wx detail data
         final PmsOrderPay orderPay = dbService.getOrderPayRecord(recOrderId); // should exists
         if (orderPay.isClosed() && PayStatus.SUCCESS == orderPay.getPayStatus())
@@ -305,7 +320,6 @@ public class WxPayController {
         final String result = callbackMap.get(K_RESULT_CODE);
         if (PayStatus.isSuccess(result)) {
             orderPay.setPayStatus(PayStatus.SUCCESS);
-            wxDetail.setTransactionId(receivedTranId);
             wxDetail.setOutTradeNo(recOrderId);
             fillPayResultData(wxDetail, callbackMap);
         } else {
@@ -325,16 +339,24 @@ public class WxPayController {
     /**
      * 订单状况查询：设备->后台
      */
-    @RequestMapping(value = "/query", method = RequestMethod.GET)
+    @GetMapping(value = "/query", produces = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<String> query(@RequestParam("orderid") String orderId) {
         LOGGER.debug("new query for " + orderId);
         if (WxPayUtil.isValidOrderId(orderId)) {
             PmsOrderPay orderPay = dbService.getOrderPayRecord(orderId);
             if (orderPay != null) {
                 final PmsPayDetailWx wxDetail = dbService.getWxPayRecord(orderId);
-                if (!orderPay.isClosed() && isSyncTimeSuitable(wxDetail))
+                if (!orderPay.isClosed() && isSyncTimeSuitable(orderPay))
                     syncRemote(orderPay, wxDetail); // todo, temp use here, change to threadpool later
-                return helper.clientOkResponse(getQueryClientData(orderPay, wxDetail));
+                WxClientResponse res = getQueryClientData(orderPay, wxDetail);
+                Integer refundedTotal;
+                if (dbService.refundRecordExists(orderId) && (refundedTotal = dbService.getRefundedTotalFee(orderId)) > 0) {
+                    res.setHasRefund(true);
+                    res.setRefundTotalFee(refundedTotal);
+                } else {
+                    res.setHasRefund(false);
+                }
+                return helper.clientOkResponse(res);
             } else {
                 return helper.clientErrResponse(NOT_FOUND, "未找到记录");
             }
@@ -346,10 +368,10 @@ public class WxPayController {
     /**
      * 关闭订单：设备->后台
      */
-    @RequestMapping(value = "/close", method = RequestMethod.POST)
+    @PostMapping(value = "/close", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<String> close(@RequestBody String closeReqBody) {
         LOGGER.debug("new close request\n" + closeReqBody);
-        final WxClientRequest clientReq = helper.deserializeClientJson(closeReqBody, WxClientRequest.class);
+        final WxClientRequest clientReq = helper.deserializeClientJson(closeReqBody);
         if (clientReq == null)
             return helper.clientErrResponse(BAD_REQUEST, "JSON解析错误");
         final String orderId = clientReq.getOrderId();
@@ -368,7 +390,7 @@ public class WxPayController {
                 "订单" + orderId + "已关闭", clientReq.getId());
         if (isNewOrder(orderPay.getCreateTime()))
             return helper.clientErrResponse(FORBIDDEN, orderId, "申请关闭订单时间过短", clientReq.getId());
-        final WxPayDataWrapper dataWrapper = dataBuilder.buildCloseData(clientReq);
+        final WxPayDataWrapper dataWrapper = dataBuilder.buildCloseData(orderId);
         final String reqXml = helper.serializeWxXml(dataWrapper.getWxParams());
         logHttp(orderId, OrderPayOp.CLOSE_ORDER, true, "/pay/wx/close", closeReqBody);
         logHttp(orderId, OrderPayOp.CLOSE_PAY, true, config.getCloseUrl(), reqXml);
@@ -403,6 +425,156 @@ public class WxPayController {
         orderPay.setRemark(orderPay.getPayStatus() + " by client");
         dbService.updateOrderPayRecord(orderPay);
         return helper.clientOkResponse(new WxClientResponse(orderId, orderStatus, orderPay.getPayStatus(), reqId));
+    }
+
+    // todo lack data validation & user auth, do not use in product!
+    @PostMapping(path = "/refund", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<String> refund(@RequestBody String clientReqJson) {
+        if (!config.isRefundEnabled())
+            return helper.textResponse(NOT_FOUND, TEXT_PLAIN, "未开放退款功能");
+        LOGGER.debug("new refund request\n " + clientReqJson);
+        WxClientRequest clientReq = helper.deserializeClientJson(clientReqJson);
+        if (clientReq == null) return helper.clientErrResponse(BAD_REQUEST, "JSON解析失败");
+        String reqId = clientReq.getId();
+        String orderId = clientReq.getOrderId();
+        PmsOrderPay orderPay = dbService.getOrderPayRecord(orderId);
+        if (orderPay == null || !orderPay.isClosed() || PayStatus.SUCCESS != orderPay.getPayStatus())
+            return helper.clientErrResponse(BAD_REQUEST, orderId, "订单不存在或不符合退款条件", reqId);
+        Integer refunded = dbService.getRefundedTotalFee(orderId);
+        Integer totalPaied = orderPay.getOrderTotalFee();
+        Integer thisRefund = clientReq.getRefundFee();
+        if (thisRefund == null || thisRefund <= 0 || thisRefund > (totalPaied - refunded))
+            return helper.clientErrResponse(BAD_REQUEST, orderId, "退款金额有误或超出范围", reqId);
+        WxPayDataWrapper wrapper = dataBuilder.buildRefundData(orderId, thisRefund);
+        final PmsRefund refund = wrapper.getRefund();
+        final String reqXml = helper.serializeWxXml(wrapper.getWxParams());
+        logHttp(orderId, OrderPayOp.REFUND, true, config.getRefundUrl(), reqXml);
+        dbService.newRefundRecord(refund);
+        // todo till this
+        return handleRefundResult(helper.sendWxPostWithCert(config.getRefundUrl(), reqXml), refund, reqId);
+    }
+
+    // todo
+    private ResponseEntity<String> handleRefundResult(String wxRefundResBody, PmsRefund refund, String reqId) {
+        final String orderId = refund.getOrderId();
+        final String refundNo = refund.getRefundNo();
+        LOGGER.debug("order " + orderId + " refund " + refundNo + " result: " + wxRefundResBody);
+        Map<String, String> resMap = helper.deserializeWxXml(wxRefundResBody);
+        if (resMap == null || !dataBuilder.checkSign(resMap))
+            return helper.clientErrResponse(BAD_GATEWAY, orderId, "微信返回结果异常或解析失败", reqId);
+        logHttp(orderId, OrderPayOp.REFUND, false, config.getRefundUrl(), wxRefundResBody);
+
+        String resultCode = resMap.get(K_RESULT_CODE);
+        RefundStatus status;
+        WxClientResponse clientRes = new WxClientResponse(orderId);
+        // todo
+        if (isSuccess(resultCode)) {
+            status = RefundStatus.WAIT;
+            // update refund
+            String wxRefundId = resMap.get(K_REFUND_ID);
+            // todo wx refund detail
+            PmsRefundDetailWx wxRefund = new PmsRefundDetailWx(refundNo);
+            wxRefund.setRefundId(wxRefundId);
+            wxRefund.setRefundFee(WxPayUtil.parseFee(resMap.get(K_REFUND_FEE)));
+            wxRefund.setCashRefundFee(WxPayUtil.parseFee(resMap.get(K_CASH_REFUND_FEE)));
+            dbService.newWxRefundRecord(wxRefund);
+            // response to client
+            clientRes.setRefundNo(refundNo);
+            clientRes.setWxRefundId(wxRefundId);
+        } else {
+            status = RefundStatus.FAIL;
+            String returnCode = resMap.get(K_RETURN_CODE);
+            String errCode = resMap.getOrDefault(K_ERR_CODE, returnCode);
+            String errDesc = resMap.getOrDefault(K_ERR_CODE_DES, resMap.get(K_RETURN_MSG));
+            // update refund
+            refund.setRefundErrCode(errCode);
+            refund.setRefundErrDesc(errDesc);
+            refund.setIsClosed(true);
+            refund.setCloseTime(ZonedDateTime.now());
+            if (!isSuccess(returnCode)) refund.setRemark("http response err"); // todo
+            // response to client
+            clientRes.setRemark("退款请求失败");
+            // no wx refund detail
+        }
+        // update refund
+        refund.setRefundStatus(status);
+        dbService.updateRefundRecord(refund);
+        // response to client
+        clientRes.setRefundFee(refund.getRefundFee());
+        clientRes.setRefundStatus(status);
+        return RefundStatus.WAIT == status ?
+            helper.clientOkResponse(clientRes) : helper.clientErrResponse(BAD_GATEWAY, clientRes);
+    }
+
+    @GetMapping(value = "/refund/query", produces = APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<String> refundQuery(@RequestParam("refundno") String refundNo) {
+        if (!config.isRefundEnabled())
+            return helper.textResponse(NOT_FOUND, TEXT_PLAIN, "未开放退款功能");
+        LOGGER.debug("new refund query for " + refundNo);
+        if (refundNo == null || !WxPayUtil.isValidRefoundNo(refundNo))
+            return helper.clientErrResponse(BAD_GATEWAY, "退款单号错误");
+        PmsRefund refund = dbService.getRefundRecord(refundNo);
+        if (refund == null)
+            return helper.clientErrResponse(NOT_FOUND, refundNo, "该订单无退款记录", null);
+        WxPayDataWrapper wrapper = dataBuilder.buildRefundQueryData(refundNo);
+        String resBody = helper.sendWxPostWithCert(config.getRefundQueryUrl(), helper.serializeWxXml(wrapper.getWxParams()));
+        return handleRefundQueryResult(resBody, refund);
+        // return helper.textResponse(OK, TEXT_XML, resBody);
+    }
+
+    // todo logic not well sorted!
+    private ResponseEntity<String> handleRefundQueryResult(String refunsQueryResBody, PmsRefund refund) {
+        String refundNo = refund.getRefundNo();
+        String orderId = refund.getOrderId();
+        LOGGER.debug("refund " + refundNo + " query result " + refunsQueryResBody);
+        logHttp(refundNo, OrderPayOp.QUERY_REFUND, false, config.getRefundQueryUrl(), refunsQueryResBody);
+        HttpStatus status;
+        WxClientResponse clientRes = new WxClientResponse(orderId, refundNo);
+        Map<String, String> resMap = helper.deserializeWxXml(refunsQueryResBody);
+        if (resMap != null) {
+            final String resultCode = resMap.get(K_RESULT_CODE);
+            String errCode = resMap.get(K_ERR_CODE);
+            String errDesc = resMap.get(K_ERR_CODE_DES);
+            LOGGER.error("refund query for " + refundNo + " result " + resultCode
+                + " err code: " + errCode + " desc: " + errDesc);
+            if (isSuccess(resultCode)) {
+                status = OK;
+                boolean allOk = true;
+                for (PmsRefundDetailWx wxRefund : WxPayControllerHelper.parseRefundResultData(refund, resMap)) {
+                    LOGGER.debug("refund no " + refundNo + " n=" + wxRefund.getRefundIdSn()
+                        + " fee " + wxRefund.getRefundFee() + " status " + wxRefund.getRefundStatus());
+                    dbService.newWxRefundRecord(wxRefund);
+                    if (!isSuccess(wxRefund.getRefundStatus())) allOk = false;
+                }
+                if (allOk) {
+                    refund.setRefundStatus(RefundStatus.SUCCESS);
+                    refund.setIsClosed(true);
+                    refund.setCloseTime(ZonedDateTime.now());
+                    dbService.updateRefundRecord(refund);
+                    clientRes.setRefundStatus(RefundStatus.SUCCESS);
+                    clientRes.setRefundFee(refund.getRefundFee());
+                    clientRes.setRefundTotalFee(dbService.getRefundedTotalFee(orderId));
+                    clientRes.setOrderTotalFee(WxPayUtil.parseFee(resMap.get(K_TOTAL_FEE)));
+                } else {
+                    // todo
+                    refund.setRefundStatus(RefundStatus.WAIT);
+                    refund.setSyncTime(ZonedDateTime.now());
+                    dbService.updateRefundRecord(refund);
+                    clientRes.setRefundStatus(RefundStatus.WAIT);
+                }
+            } else {
+                status = FORBIDDEN;
+                refund.setRefundErrCode(errCode);
+                refund.setRefundErrDesc(errDesc);
+                refund.setSyncTime(ZonedDateTime.now());
+                dbService.updateRefundRecord(refund);
+                clientRes.setRemark("微信查询退款失败");
+            }
+        } else {
+            status = BAD_GATEWAY;
+            clientRes.setRemark("微信查询退款出错");
+        }
+        return helper.clientErrResponse(status, clientRes);
     }
 
     public void logHttp(String orderId, OrderPayOp op, boolean isReq, URI url, String body) {

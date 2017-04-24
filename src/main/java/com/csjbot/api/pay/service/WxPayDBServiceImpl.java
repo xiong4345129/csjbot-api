@@ -1,6 +1,7 @@
 package com.csjbot.api.pay.service;
 
 import com.csjbot.api.pay.dao.PmsPayDetailWxMapper;
+import com.csjbot.api.pay.dao.PmsRefundDetailWxMapper;
 import com.csjbot.api.pay.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,8 @@ public class WxPayDBServiceImpl extends OrderPayDBServiceImpl implements WxPayDB
 
     @Autowired
     private PmsPayDetailWxMapper wxPayMapper;
+    @Autowired
+    private PmsRefundDetailWxMapper wxRefundMapper;
 
     public WxPayDBServiceImpl() {
         System.out.println("init WxPayDBServiceImpl");
@@ -35,19 +38,19 @@ public class WxPayDBServiceImpl extends OrderPayDBServiceImpl implements WxPayDB
         return wxPayMapper.exists(orderId);
     }
 
+    @Override
+    public int newWxRefundRecord(PmsRefundDetailWx record) {
+        return wxRefundMapper.insert(record);
+    }
+
     // @Override
-    // public boolean newWxPayOrder(WxPayDataWrapper dataWrapper) {
-    //     newOrderPayRecord(dataWrapper.getOrderPay());
-    //     newWxPayRecord(dataWrapper.getWxDetail());
-    //     insertOrderItems(dataWrapper.getItems());
-    //     return true;
+    // public int updateWxRefundRecord(PmsRefundDetailWx record) {
+    //     return wxRefundMapper.update(record);
     // }
     //
-    //
-    // public boolean newWxPayNewOrder(WxPayDataWrapper dataWrapper) {
-    //     newOrderPayRecord(dataWrapper.getOrderPay());
-    //     newWxPayRecord(dataWrapper.getWxDetail());
-    //     insertOrderItems(dataWrapper.getItems());
-    //     return true;
+    // @Override
+    // public PmsRefundDetailWx getWxRefundRecord(String refundNo) {
+    //     return wxRefundMapper.get(refundNo);
     // }
+
 }

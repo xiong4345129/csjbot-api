@@ -8,6 +8,8 @@ public class WxPayDataWrapper {
     private boolean empty;
     private PmsOrderPay orderPay;
     private PmsPayDetailWx wxDetail;
+    private PmsRefund refund;
+    private PmsRefundDetailWx wxRefund;
     private List<PmsOrderItem> items;
     private Map<String, String> wxParams;
 
@@ -41,6 +43,14 @@ public class WxPayDataWrapper {
         this.wxDetail = wxDetail;
     }
 
+    public PmsRefund getRefund() {
+        return refund;
+    }
+
+    public void setRefund(PmsRefund refund) {
+        this.refund = refund;
+    }
+
     public List<PmsOrderItem> getItems() {
         return items;
     }
@@ -53,24 +63,11 @@ public class WxPayDataWrapper {
         return wxParams;
     }
 
-    public void setWxParams(Map<String, String> wxParams) {
-        this.wxParams = wxParams;
+    public PmsRefundDetailWx getWxRefund() {
+        return wxRefund;
     }
 
-    public void syncRemote() {
-        // todo
+    public void setWxRefund(PmsRefundDetailWx wxRefund) {
+        this.wxRefund = wxRefund;
     }
-
-    public boolean isClosed() {
-        return orderPay.isClosed();
-    }
-
-    public ZonedDateTime lastSync() {
-        return wxDetail.getSyncTime();
-    }
-
-    public boolean shouldSync(){
-        return false; // todo
-    }
-
 }

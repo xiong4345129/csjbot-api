@@ -12,9 +12,9 @@ public class PmsOrderPayHttpLog{
     private ZonedDateTime createTime;
 
     /**
-     * 正式订单流水号
+     * 正式订单流水号或退款单流水号
      */
-    private String orderId;
+    private String id;
 
     /**
      * 服务操作名
@@ -38,13 +38,13 @@ public class PmsOrderPayHttpLog{
 
     public PmsOrderPayHttpLog() { }
 
-    public PmsOrderPayHttpLog(String orderId) {
-        this.orderId = orderId;
+    public PmsOrderPayHttpLog(String id) {
+        this.id = id;
     }
 
-    public PmsOrderPayHttpLog(String orderId, OrderPayOp operation,
+    public PmsOrderPayHttpLog(String id, OrderPayOp operation,
                               boolean isRequest, String path, String body) {
-        this.orderId = orderId;
+        this.id = id;
         this.operation = operation.name();
         this.isRequest = isRequest;
         this.path = path;
@@ -55,8 +55,8 @@ public class PmsOrderPayHttpLog{
         return createTime;
     }
 
-    public String getOrderId() {
-        return orderId;
+    public String getId() {
+        return id;
     }
 
     public String getOperation() {

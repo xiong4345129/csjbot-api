@@ -1,0 +1,21 @@
+<xml>
+  <return_code><![CDATA[SUCCESS]]></return_code>  
+  <return_msg><![CDATA[OK]]></return_msg>  
+  <appid><![CDATA[wxfec1f26a067221ae]]></appid>  
+  <mch_id><![CDATA[1236388002]]></mch_id>  
+  <nonce_str><![CDATA[LEButcoN83enA0J2]]></nonce_str>  
+  <sign><![CDATA[451EEBC9B8BF7F508C66D73D4C77F6F6]]></sign>  
+  <result_code><![CDATA[SUCCESS]]></result_code>  
+  <transaction_id><![CDATA[4000702001201704227936576642]]></transaction_id>  
+  <out_trade_no><![CDATA[1492844-5410-000-002-929]]></out_trade_no>  
+  <out_refund_no><![CDATA[1492848-3210-0014]]></out_refund_no>  
+  <refund_id><![CDATA[50000202582017042200984005548]]></refund_id>  
+  <refund_channel><![CDATA[]]></refund_channel>  
+  <refund_fee>1</refund_fee>  
+  <coupon_refund_fee>0</coupon_refund_fee>  
+  <total_fee>2</total_fee>  
+  <cash_fee>2</cash_fee>  
+  <coupon_refund_count>0</coupon_refund_count>  
+  <cash_refund_fee>1</cash_refund_fee> 
+</xml>
+

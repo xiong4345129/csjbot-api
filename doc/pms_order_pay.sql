@@ -43,6 +43,8 @@ CREATE TABLE `pms_order_item` (
   CONSTRAINT `pms_order_item_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `pms_product` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单、支付状态表';
 
+
+
 DROP TABLE `pms_order_pay_http_log`;
 
 CREATE TABLE `pms_order_pay_http_log` (
@@ -83,11 +85,11 @@ CREATE TABLE `pms_pay_detail_wx` (
   `bank_type` VARCHAR(16) COMMENT '付款银行',
   `total_fee` INT COMMENT '标价金额',
   `fee_type` VARCHAR(8) COMMENT '标价货种',
-  `refund_fee` INT COMMENT '退款金额',
-  `refund_fee_type` VARCHAR(8) COMMENT '退款货币种类',
+#   `refund_fee` INT COMMENT '退款金额',
+#   `refund_fee_type` VARCHAR(8) COMMENT '退款货币种类',
   `cash_fee` INT COMMENT '现金支付金额',
   `cash_fee_type` VARCHAR(16) COMMENT '现金支付币种',
-  `cash_refund_fee` INT COMMENT '现金退款金额',
+#   `cash_refund_fee` INT COMMENT '现金退款金额',
   `settlement_total_fee` INT COMMENT '应结订单金额',
   `coupon_fee` INT COMMENT '代金券金额',
   `goods_tag` VARCHAR(32) COMMENT '商品标记',

@@ -15,8 +15,11 @@ public interface WxPayDataService {
 
     WxPayDataWrapper buildOrderData(WxClientRequest request);
 
-    WxPayDataWrapper buildCloseData(WxClientRequest request);
+    WxPayDataWrapper buildCloseData(String orderId);
 
-    WxPayDataWrapper buildQueryData(AbstractMap.SimpleEntry<String, String> request);
+    WxPayDataWrapper buildQueryData(String orderId);
 
+    WxPayDataWrapper buildRefundData(String orderId, Integer refundFee);
+
+    WxPayDataWrapper buildRefundQueryData(String refundNo); // todo
 }

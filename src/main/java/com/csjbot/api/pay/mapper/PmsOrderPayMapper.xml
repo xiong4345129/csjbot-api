@@ -17,6 +17,7 @@
         <result column="pay_status" jdbcType="VARCHAR" property="payStatus"/>
         <result column="pay_err_code" jdbcType="VARCHAR" property="payErrCode"/>
         <result column="pay_err_desc" jdbcType="VARCHAR" property="payErrDesc"/>
+        <result column="sync_time" jdbcType="TIMESTAMP" property="syncTime"/>
         <result column="is_closed" jdbcType="BOOLEAN" property="isClosed"/>
         <result column="close_time" jdbcType="TIMESTAMP" property="closeTime"/>
         <result column="remark" jdbcType="VARCHAR" property="remark"/>
@@ -38,6 +39,7 @@
         pay_status,
         pay_err_code,
         pay_err_desc,
+        sync_time,
         is_closed,
         close_time,
         remark
@@ -83,6 +85,9 @@
             <if test="remark != null">
                 remark,
             </if>
+            <if test="syncTime != null">
+                sync_time,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{orderId,jdbcType=VARCHAR},
@@ -117,6 +122,9 @@
             <if test="remark != null">
                 #{remark,jdbcType=VARCHAR},
             </if>
+            <if test="syncTime != null">
+                #{syncTime,jdbcType=TIMESTAMP},
+            </if>
         </trim>
     </insert>
     <update id="update" parameterType="com.csjbot.api.pay.model.PmsOrderPay">
@@ -149,6 +157,9 @@
             <if test="remark != null">
                 remark = #{remark,jdbcType=VARCHAR},
             </if>
+            <if test="syncTime != null">
+                sync_time = #{syncTime,jdbcType=TIMESTAMP},
+            </if>
         </set>
         where order_id = #{orderId,jdbcType=VARCHAR}
     </update>
@@ -159,4 +170,5 @@
     <select id="existsByCandidate" resultType="java.lang.Boolean" parameterType="map">
         SELECT EXISTS(SELECT 1 FROM pms_order_pay WHERE order_pseudo_no = #{pseudoNo} AND order_device_id = #{deviceId})
     </select>
+
 </mapper>

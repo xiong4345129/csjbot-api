@@ -104,16 +104,6 @@ public class PmsPayDetailWx {
     private String feeType;
 
     /**
-     * 退款金额
-     */
-    private Integer refundFee;
-
-    /**
-     * 退款货币种类
-     */
-    private String refundFeeType;
-
-    /**
      * 现金支付金额
      */
     private Integer cashFee;
@@ -122,11 +112,6 @@ public class PmsPayDetailWx {
      * 现金支付币种
      */
     private String cashFeeType;
-
-    /**
-     * 现金退款金额
-     */
-    private Integer cashRefundFee;
 
     /**
      * 应结订单金额
@@ -152,11 +137,6 @@ public class PmsPayDetailWx {
      * 是否关注公众账号
      */
     private String isSubscribe;
-
-    /**
-     * 上次向微信查询订单时间
-     */
-    private ZonedDateTime syncTime;
 
     public PmsPayDetailWx() { }
 
@@ -312,22 +292,6 @@ public class PmsPayDetailWx {
         this.feeType = feeType;
     }
 
-    public Integer getRefundFee() {
-        return refundFee;
-    }
-
-    public void setRefundFee(Integer refundFee) {
-        this.refundFee = refundFee;
-    }
-
-    public String getRefundFeeType() {
-        return refundFeeType;
-    }
-
-    public void setRefundFeeType(String refundFeeType) {
-        this.refundFeeType = refundFeeType;
-    }
-
     public Integer getCashFee() {
         return cashFee;
     }
@@ -342,14 +306,6 @@ public class PmsPayDetailWx {
 
     public void setCashFeeType(String cashFeeType) {
         this.cashFeeType = cashFeeType;
-    }
-
-    public Integer getCashRefundFee() {
-        return cashRefundFee;
-    }
-
-    public void setCashRefundFee(Integer cashRefundFee) {
-        this.cashRefundFee = cashRefundFee;
     }
 
     public Integer getSettlementTotalFee() {
@@ -392,11 +348,4 @@ public class PmsPayDetailWx {
         this.isSubscribe = isSubscribe;
     }
 
-    public ZonedDateTime getSyncTime() {
-        return syncTime;
-    }
-
-    public void setSyncTime(ZonedDateTime syncTime) {
-        this.syncTime = syncTime;
-    }
 }

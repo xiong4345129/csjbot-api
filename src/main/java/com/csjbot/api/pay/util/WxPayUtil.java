@@ -1,16 +1,12 @@
 package com.csjbot.api.pay.util;
 
-import com.csjbot.api.pay.service.JacksonXmlParser;
-import com.csjbot.api.pay.service.MediaTypeParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -23,12 +19,20 @@ public final class WxPayUtil {
     private static final String NONCE_STR_SRC =
         RandomGen.ALPHABET.toUpperCase() + RandomGen.NUMBER;
 
-    public static boolean isValidOrderId(String str) {
-        return OrderIdGen.check(str);
+    public static boolean isValidOrderId(String val) {
+        return OrderIdGen.check(val);
+    }
+
+    public static boolean isValidRefoundNo(String val) {
+        return RefundNoGen.check(val);
     }
 
     public static String newOrderId() {
         return OrderIdGen.next();
+    }
+
+    public static String newRefundNo() {
+        return RefundNoGen.next();
     }
 
     public static String newNonceStr() {
@@ -136,6 +140,11 @@ public final class WxPayUtil {
 
     public static long minutesBetween(ZonedDateTime start, ZonedDateTime end) {
         return ChronoUnit.MINUTES.between(start, end);
+    }
+
+    public static Integer parseFee(String val) {
+        if (val == null || !val.matches("[0-9]+")) return null;
+        return Integer.parseInt(val);
     }
 
     // public static String makeXml(Map<String, String> map) {

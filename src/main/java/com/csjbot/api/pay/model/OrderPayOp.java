@@ -9,6 +9,7 @@ public enum OrderPayOp {
     NOTIFY_PAY_RESULT,
     CLOSE_PAY,
     QUERY_PAY,
-    REFUND
+    REFUND,
+    QUERY_REFUND
     ;
 }
