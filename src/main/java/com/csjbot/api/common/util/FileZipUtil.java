@@ -24,6 +24,8 @@ import java.util.zip.ZipOutputStream;
 public class FileZipUtil {
 
 	public static String PATH = "118.178.188.27";
+	public static final String CategoryCode = "CPFL";
+	public static final String ChannelCode = "BBLX";
 
 	/**
 	 * 功能:压缩多个文件成一个zip文件

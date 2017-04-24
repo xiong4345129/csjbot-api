@@ -238,4 +238,12 @@ public class SnowRobotController {
 			throws IOException {
 		ResponseUtil.write(response, snowRobotServiceDAO.adminLogin(data));
 	}
+	
+	// 机器人升级版本数据
+	@RequestMapping(value = "/tms/versionRobot", method = RequestMethod.GET)
+	@ResponseBody
+	public void versionRobot(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
+		ResponseUtil.write(response, snowRobotServiceDAO.returnRobotVersion(request.getParameter("category"),request.getParameter("channel")));
+	}
 }

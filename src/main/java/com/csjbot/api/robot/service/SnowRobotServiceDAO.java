@@ -94,4 +94,8 @@ public interface SnowRobotServiceDAO {
 	//管理员绑定机器人查询
 	public abstract JSONObject adminJudgeBindRobot(String type, String id);
 	
+	//机器人升级版本数据
+	public abstract JSONObject returnRobotVersion(String category,String channel);
+
+	
 }

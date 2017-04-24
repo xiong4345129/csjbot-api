@@ -3,6 +3,7 @@
  */
 package com.csjbot.api.robot.service;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,6 +22,10 @@ import com.csjbot.api.robot.dao.Sms_robotDAO;
 import com.csjbot.api.robot.dao.Sms_secretDAO;
 import com.csjbot.api.robot.dao.Sms_ug_relationsDAO;
 import com.csjbot.api.robot.dao.Sms_userDAO;
+import com.csjbot.api.robot.dao.Sys_attachmentDAO;
+import com.csjbot.api.robot.dao.Sys_dataDAO;
+import com.csjbot.api.robot.dao.Sys_data_dictionaryDAO;
+import com.csjbot.api.robot.dao.Sys_version_robotDAO;
 import com.csjbot.api.robot.model.Sms_admin;
 import com.csjbot.api.robot.model.Sms_auth_code;
 import com.csjbot.api.robot.model.Sms_group;
@@ -28,7 +33,12 @@ import com.csjbot.api.robot.model.Sms_robot;
 import com.csjbot.api.robot.model.Sms_secret;
 import com.csjbot.api.robot.model.Sms_ug_relations;
 import com.csjbot.api.robot.model.Sms_user;
+import com.csjbot.api.robot.model.Sys_attachment;
+import com.csjbot.api.robot.model.Sys_data;
+import com.csjbot.api.robot.model.Sys_data_dictionary;
+import com.csjbot.api.robot.model.Sys_version_robot;
 import com.csjbot.api.robot.util.CharacterUtil;
+import com.csjbot.api.common.util.FileZipUtil;
 import com.csjbot.api.common.util.JsonUtil;
 import com.csjbot.api.common.util.RandomUtil;
 import com.csjbot.api.face.service.RestTest;
@@ -59,6 +69,18 @@ public class SnowRobotServiceDAOImpl implements SnowRobotServiceDAO {
 
 	@Autowired
 	private Sms_adminDAO sms_adminDAO;
+	
+	@Autowired
+	private Sys_dataDAO sys_dataDAO;
+	
+	@Autowired
+	private Sys_data_dictionaryDAO sys_data_dictionaryDAO;
+	
+	@Autowired
+	private Sys_version_robotDAO sys_version_robotDAO;
+	
+	@Autowired
+    private Sys_attachmentDAO sys_attachmentDAO;
 
 	// 机器人出库
 	@Override
@@ -988,4 +1010,50 @@ public class SnowRobotServiceDAOImpl implements SnowRobotServiceDAO {
 		return JsonUtil.toJson(jsonUtil);
 	}
 
+	//机器人升级版本数据
+	public JSONObject returnRobotVersion(String category, String channel) {
+		JsonUtil jsonUtil = getJsonUtilEntity(true);
+		boolean upgrade = false;
+		Map<String, Object> result = new HashMap<>();
+		Map<String, Object> content = new HashMap<>();
+		Sys_data sys_data1 = sys_dataDAO.findCodeById(FileZipUtil.CategoryCode);
+		Sys_data sys_data2 = sys_dataDAO.findCodeById(FileZipUtil.ChannelCode);
+ 		Sys_data_dictionary params1= sys_data_dictionaryDAO.findDataDictionaryById(sys_data1.getId(),category);
+		Sys_data_dictionary params2= sys_data_dictionaryDAO.findDataDictionaryById(sys_data2.getId(),channel);
+		
+		if(params1 != null ){
+			if(params1.getRule() != 0){
+			   upgrade = true;
+			   Sys_version_robot params3 = new Sys_version_robot();
+			   List<Sys_version_robot> list = sys_version_robotDAO.findSysVersionBycach(params1.getId(),params2.getId());
+			   for(Sys_version_robot svr : list){
+				   if(svr.getVersion_code() != 0){
+					   //判断版本号中最大的那个
+						   params3 = sys_version_robotDAO.findSysByVersionCode(params1.getId(),params2.getId());
+				   }else{
+					   //判断更新日期最早的那个
+					      params3 = sys_version_robotDAO.findSysByDateUpdate(params1.getId(),params2.getId());
+				   }
+			   }
+			   content.put("category", category);
+			   content.put("channel", channel);
+			   content.put("version_code", params3.getVersion_code());
+			   content.put("version_name", params3.getVersion_name());
+			   content.put("checksum", params3.getMd5());
+			   List<Sys_attachment> saList = sys_attachmentDAO.getSystByProId(params3.getId().toString());
+			   content.put("url",FileZipUtil.PATH+":8080/api/sys/downFile?filePath="+saList.get(0).getLocation().toString()+"&fileName="+saList.get(0).getAlias_name().toString());
+			}else{
+				jsonUtil = getJsonUtilEntity(false);
+				jsonUtil.setMessage("版本不可升级!");
+			}
+			content.put("upgrade", upgrade);
+			result.put("resule", content);
+			jsonUtil.setResult(result);
+		} else {
+			jsonUtil = getJsonUtilEntity(false);
+			jsonUtil.setMessage("Error from json format!");
+		}
+		
+		return JsonUtil.toJson(jsonUtil);
+	}
 }
