@@ -23,6 +23,8 @@ public class WxClientRequest {
     private String venderCode;
     private String venderUser;
 
+    private Integer refundFee;
+
     public String getOrderId() {
         return orderId;
     }
@@ -63,4 +65,11 @@ public class WxClientRequest {
         return venderUser;
     }
 
+    public Integer getRefundFee() {
+        return refundFee;
+    }
+
+    public void setRefundFee(Integer refundFee) {
+        this.refundFee = refundFee;
+    }
 }

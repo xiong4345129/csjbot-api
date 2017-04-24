@@ -79,6 +79,11 @@ public class PmsOrderPay {
     private String payErrDesc;
 
     /**
+     * 上次向三方查询、同步信息的时间
+     */
+    private ZonedDateTime syncTime;
+
+    /**
      * 订单是否处理完成
      */
     private Boolean isClosed;
@@ -207,13 +212,17 @@ public class PmsOrderPay {
         this.payErrDesc = payErrDesc;
     }
 
+    public ZonedDateTime getSyncTime() {
+        return syncTime;
+    }
+
+    public void setSyncTime(ZonedDateTime syncTime) {
+        this.syncTime = syncTime;
+    }
+
     public Boolean isClosed(){
         return isClosed;
     }
-
-    // public Boolean getClosed() {
-    //     return isClosed;
-    // }
 
     public void setClosed(Boolean closed) {
         isClosed = closed;

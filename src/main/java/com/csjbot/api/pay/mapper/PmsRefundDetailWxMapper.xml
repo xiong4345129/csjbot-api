@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.pay.dao.PmsRefundDetailWxMapper">
+    <resultMap id="BaseResultMap" type="com.csjbot.api.pay.model.PmsRefundDetailWx">
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="refund_no" jdbcType="VARCHAR" property="refundNo"/>
+        <result column="refund_count" jdbcType="INTEGER" property="refundCount"/>
+        <result column="refund_id_sn" jdbcType="INTEGER" property="refundIdSn"/>
+        <result column="refund_id" jdbcType="VARCHAR" property="refundId"/>
+        <result column="refund_status" jdbcType="VARCHAR" property="refundStatus"/>
+        <result column="refund_success_time" jdbcType="TIMESTAMP" property="refundSuccessTime"/>
+        <result column="refund_account" jdbcType="VARCHAR" property="refundAccount"/>
+        <result column="refund_recv_accout" jdbcType="VARCHAR" property="refundRecvAccout"/>
+        <result column="refund_channel" jdbcType="VARCHAR" property="refundChannel"/>
+        <result column="refund_fee" jdbcType="INTEGER" property="refundFee"/>
+        <result column="refund_fee_type" jdbcType="VARCHAR" property="refundFeeType"/>
+        <result column="cash_refund_fee" jdbcType="INTEGER" property="cashRefundFee"/>
+        <result column="coupon_refund_fee" jdbcType="INTEGER" property="couponRefundFee"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    create_time, update_time, refund_no, refund_count, refund_id_sn, refund_id, refund_status,
+    refund_success_time, refund_account, refund_recv_accout, refund_channel, refund_fee,
+    refund_fee_type, cash_refund_fee, coupon_refund_fee
+  </sql>
+
+    <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from pms_refund_detail_wx
+        where refund_no = #{refundNo,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insert" parameterType="com.csjbot.api.pay.model.PmsRefundDetailWx">
+        insert into pms_refund_detail_wx
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            refund_no,
+            refund_id,
+            refund_fee,
+            <if test="refundCount != null">
+                refund_count,
+            </if>
+            <if test="refundIdSn != null">
+                refund_id_sn,
+            </if>
+            <if test="refundStatus != null">
+                refund_status,
+            </if>
+            <if test="refundSuccessTime != null">
+                refund_success_time,
+            </if>
+            <if test="refundAccount != null">
+                refund_account,
+            </if>
+            <if test="refundRecvAccout != null">
+                refund_recv_accout,
+            </if>
+            <if test="refundChannel != null">
+                refund_channel,
+            </if>
+            <if test="refundFeeType != null">
+                refund_fee_type,
+            </if>
+            <if test="cashRefundFee != null">
+                cash_refund_fee,
+            </if>
+            <if test="couponRefundFee != null">
+                coupon_refund_fee,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{refundNo,jdbcType=VARCHAR},
+            #{refundId,jdbcType=VARCHAR},
+            #{refundFee,jdbcType=INTEGER},
+            <if test="refundCount != null">
+                #{refundCount,jdbcType=INTEGER},
+            </if>
+            <if test="refundIdSn != null">
+                #{refundIdSn,jdbcType=INTEGER},
+            </if>
+            <if test="refundStatus != null">
+                #{refundStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="refundSuccessTime != null">
+                #{refundSuccessTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="refundAccount != null">
+                #{refundAccount,jdbcType=VARCHAR},
+            </if>
+            <if test="refundRecvAccout != null">
+                #{refundRecvAccout,jdbcType=VARCHAR},
+            </if>
+            <if test="refundChannel != null">
+                #{refundChannel,jdbcType=VARCHAR},
+            </if>
+            <if test="refundFeeType != null">
+                #{refundFeeType,jdbcType=VARCHAR},
+            </if>
+            <if test="cashRefundFee != null">
+                #{cashRefundFee,jdbcType=INTEGER},
+            </if>
+            <if test="couponRefundFee != null">
+                #{couponRefundFee,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.csjbot.api.pay.model.PmsRefundDetailWx">
+        update pms_refund_detail_wx
+        <set>
+            <if test="record.refundCount != null">
+                refund_count = #{record.refundCount,jdbcType=INTEGER},
+            </if>
+            <if test="record.refundIdSn != null">
+                refund_id_sn = #{record.refundIdSn,jdbcType=INTEGER},
+            </if>
+            <if test="record.refundStatus != null">
+                refund_status = #{record.refundStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="record.refundSuccessTime != null">
+                refund_success_time = #{record.refundSuccessTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.refundAccount != null">
+                refund_account = #{record.refundAccount,jdbcType=VARCHAR},
+            </if>
+            <if test="record.refundRecvAccout != null">
+                refund_recv_accout = #{record.refundRecvAccout,jdbcType=VARCHAR},
+            </if>
+            <if test="record.refundChannel != null">
+                refund_channel = #{record.refundChannel,jdbcType=VARCHAR},
+            </if>
+            <if test="record.refundFee != null">
+                refund_fee = #{record.refundFee,jdbcType=INTEGER},
+            </if>
+            <if test="record.refundFeeType != null">
+                refund_fee_type = #{record.refundFeeType,jdbcType=VARCHAR},
+            </if>
+            <if test="record.cashRefundFee != null">
+                cash_refund_fee = #{record.cashRefundFee,jdbcType=INTEGER},
+            </if>
+            <if test="record.couponRefundFee != null">
+                coupon_refund_fee = #{record.couponRefundFee,jdbcType=INTEGER},
+            </if>
+        </set>
+        where refund_no = #{refundNo,jdbcType=VARCHAR}
+        AND refund_id = #{record.refundId,jdbcType=VARCHAR}
+    </update>
+
+    <!--<select id="sum" parameterType="java.lang.String" resultType="java.lang.Integer">-->
+    <!--select IFNULL(sum(refund_fee), 0) refunded from pms_refund where order_id = #{orderId,jdbcType=VARCHAR}-->
+    <!--</select>-->
+
+</mapper>

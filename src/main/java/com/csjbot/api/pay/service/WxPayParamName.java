@@ -82,10 +82,8 @@ public final class WxPayParamName {
     public static final String K_PRODUCT_ID = "product_id";
     /** 退款资金来源 */
     public static final String K_REFUND_ACCOUNT = "refund_account";
-    /** 退款资金来源 */
-    public static final String K_REFUND_ACCOUNT_$N = "refund_account_$n";
     /** 退款渠道 */
-    public static final String K_REFUND_CHANNEL_$N = "refund_channel_$n";
+    public static final String K_REFUND_CHANNEL = "refund_channel";
     /** 退款笔数 */
     public static final String K_REFUND_COUNT = "refund_count";
     /** 退款金额 */
@@ -96,14 +94,12 @@ public final class WxPayParamName {
     public static final String K_REFUND_FEE_TYPE = "refund_fee_type";
     /** 微信退款单号 */
     public static final String K_REFUND_ID = "refund_id";
-    /** 微信退款单号 */
-    public static final String K_REFUND_ID_$N = "refund_id_$n";
     /** 退款入账账户 */
-    public static final String K_REFUND_RECV_ACCOUT_$N = "refund_recv_accout_$n";
+    public static final String K_REFUND_RECV_ACCOUT = "refund_recv_accout";
     /** 退款状态 */
-    public static final String K_REFUND_STATUS_$N = "refund_status_$n";
+    public static final String K_REFUND_STATUS = "refund_status";
     /** 退款成功时间 */
-    public static final String K_REFUND_SUCCESS_TIME_$N = "refund_success_time_$n";
+    public static final String K_REFUND_SUCCESS_TIME = "refund_success_time";
     /** 业务结果 */
     public static final String K_RESULT_CODE = "result_code";
     /** 业务结果描述 */
@@ -136,9 +132,13 @@ public final class WxPayParamName {
     public static final String K_TRADE_STATE = "trade_state";
     /** 交易状态描述 */
     public static final String K_TRADE_STATE_DESC = "trade_state_desc";
-     /** 交易类型 */
+    /** 交易类型 */
     public static final String K_TRADE_TYPE = "trade_type";
     /** 微信支付订单号 */
     public static final String K_TRANSACTION_ID = "transaction_id";
+
+    public static String getNthKey(String baseKey, int n) {
+        return baseKey + "_" + n;
+    }
 
 }

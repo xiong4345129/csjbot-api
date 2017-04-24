@@ -7,14 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static com.csjbot.api.pay.service.WxPayParamName.*;
@@ -24,7 +23,7 @@ import static org.springframework.http.MediaType.APPLICATION_XML;
 import static org.springframework.http.MediaType.TEXT_XML;
 
 // move some get/set, http and static methods from controller...
-// todo is model design inefficient?
+// todo bad mvc structure
 public class WxPayControllerHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(WxPayControllerHelper.class);
 
@@ -34,18 +33,11 @@ public class WxPayControllerHelper {
     @Autowired
     @Qualifier("xmlParser")
     private MediaTypeParser xmlParser;
-    @Autowired
-    private RestClient restClient;
 
-    static AbstractMap.SimpleEntry<String, String> getQueryId(String orderId, String tranId) {
-        AbstractMap.SimpleEntry<String, String> reqIdPair;
-        if (tranId != null) {
-            reqIdPair = new AbstractMap.SimpleEntry<>(K_TRANSACTION_ID, tranId);
-        } else {
-            reqIdPair = new AbstractMap.SimpleEntry<>(K_OUT_TRADE_NO, orderId);
-        }
-        return reqIdPair;
-    }
+    @Autowired
+    private RestTemplate restTemplate;
+    @Autowired
+    private RestTemplate restTemplateWithCert;
 
     static PayStatus mapFromTradeState(TradeState state, boolean isExpired) {
         PayStatus payStatus = null;
@@ -81,7 +73,6 @@ public class WxPayControllerHelper {
             res.setPayTimeEnd(wxDetail.getTimeEnd());
             res.setPayCashFee(wxDetail.getCashFee());
             res.setPayCouponFee(wxDetail.getCouponFee());
-            res.setPayRefundFee(wxDetail.getRefundFee());
             res.setWxOpenId(wxDetail.getOpenid());
             res.setWxTransactionId(wxDetail.getTransactionId());
         }
@@ -91,29 +82,54 @@ public class WxPayControllerHelper {
     // todo
     static void fillPayResultData(PmsPayDetailWx wxDetail, Map<String, String> resMap) {
         wxDetail.setOutTradeNo(resMap.get(K_OUT_TRADE_NO));
+        wxDetail.setTransactionId(resMap.get(K_TRANSACTION_ID));
         wxDetail.setTimeEnd(WxPayUtil.parseDateTime(resMap.get(K_TIME_END)));
 
         wxDetail.setOpenid(resMap.get(K_OPENID));
         wxDetail.setIsSubscribe(resMap.get(K_IS_SUBSCRIBE));
 
         wxDetail.setBankType(resMap.get(K_BANK_TYPE));
-        wxDetail.setSettlementTotalFee(parseFee(resMap.get(K_SETTLEMENT_TOTAL_FEE)));
-        wxDetail.setCashFee(parseFee(resMap.get(K_CASH_FEE)));
+        wxDetail.setSettlementTotalFee(WxPayUtil.parseFee(resMap.get(K_SETTLEMENT_TOTAL_FEE)));
+        wxDetail.setCashFee(WxPayUtil.parseFee(resMap.get(K_CASH_FEE)));
         wxDetail.setCashFeeType(resMap.get(K_CASH_FEE_TYPE));
-        wxDetail.setCouponFee(parseFee(resMap.get(K_COUPON_FEE)));
-        wxDetail.setRefundFee(parseFee(resMap.get(K_REFUND_FEE)));
-        wxDetail.setRefundFeeType(resMap.get(K_REFUND_FEE_TYPE));
+        wxDetail.setCouponFee(WxPayUtil.parseFee(resMap.get(K_COUPON_FEE)));
     }
 
-    public static Integer parseFee(String val) {
-        if (val == null || !val.matches("[0-9]+")) return null;
-        return Integer.parseInt(val);
+    // todo imcomplete do not use!
+    static List<PmsRefundDetailWx> parseRefundResultData(PmsRefund refund, Map<String, String> resMap) {
+        final List<PmsRefundDetailWx> list = new ArrayList<>();
+        final String refundNo = refund.getRefundNo();
+        final Integer cnt = Integer.parseInt(resMap.get(K_REFUND_COUNT));
+        for (int i = 0; i < cnt; i++) {
+            PmsRefundDetailWx wxRefund = new PmsRefundDetailWx();
+            wxRefund.setRefundNo(refundNo);
+            wxRefund.setRefundCount(cnt);
+            wxRefund.setRefundIdSn(i);
+            wxRefund.setRefundId(resMap.get(getNthKey(K_REFUND_ID, i)));
+            wxRefund.setRefundChannel(resMap.get(getNthKey(K_REFUND_CHANNEL, i)));
+            wxRefund.setRefundAccount(resMap.get(getNthKey(K_REFUND_ACCOUNT, i)));
+            wxRefund.setRefundRecvAccout(resMap.get(getNthKey(K_REFUND_RECV_ACCOUT,i)));
+            wxRefund.setRefundStatus(resMap.get(getNthKey(K_REFUND_STATUS, i)));
+            wxRefund.setRefundSuccessTime(WxPayUtil.parseDateTime(resMap.get(getNthKey(K_REFUND_SUCCESS_TIME, i))));
+            wxRefund.setRefundFee(WxPayUtil.parseFee(resMap.get(getNthKey(K_REFUND_FEE, i))));
+            list.add(wxRefund);
+        }
+        return list;
     }
 
+    private String doPost(RestTemplate template, URI url, String body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(TEXT_XML);
+        RequestEntity<String> req = new RequestEntity<>(body, headers, HttpMethod.POST, url);
+        return template.postForObject(url, req, String.class);
+    }
 
     String sendWxPost(URI url, String reqXml) {
-        ResponseEntity<String> res = restClient.doPost(url, reqXml, APPLICATION_XML);
-        return res.getBody();// wx response status code is always 200
+        return doPost(restTemplate, url, reqXml);
+    }
+
+    String sendWxPostWithCert(URI url, String reqXml) {
+        return doPost(restTemplateWithCert, url, reqXml);
     }
 
     Map<String, String> deserializeWxXml(String body) {
@@ -124,8 +140,8 @@ public class WxPayControllerHelper {
         return xmlParser.serialize(params, "xml");
     }
 
-    <T> T deserializeClientJson(String json, Class<T> tClass) {
-        return (json == null) ? null : jsonParser.deserialize(json, tClass);
+    WxClientRequest deserializeClientJson(String json) {
+        return (json == null) ? null : jsonParser.deserialize(json, WxClientRequest.class);
     }
 
 
@@ -181,7 +197,7 @@ public class WxPayControllerHelper {
         res.setErrDesc(errCodeDesc);
         res.setRemark(errMsg);
         res.setId(id);
-        return jsonResponse(status, res);
+        return clientErrResponse(status, res);
     }
 
     ResponseEntity<String> clientErrResponse(HttpStatus status, WxClientResponse res) {

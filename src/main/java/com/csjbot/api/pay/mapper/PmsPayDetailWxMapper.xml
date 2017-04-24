@@ -22,17 +22,13 @@
         <result column="bank_type" jdbcType="VARCHAR" property="bankType"/>
         <result column="total_fee" jdbcType="INTEGER" property="totalFee"/>
         <result column="fee_type" jdbcType="VARCHAR" property="feeType"/>
-        <result column="refund_fee" jdbcType="INTEGER" property="refundFee"/>
-        <result column="refund_fee_type" jdbcType="VARCHAR" property="refundFeeType"/>
         <result column="cash_fee" jdbcType="INTEGER" property="cashFee"/>
         <result column="cash_fee_type" jdbcType="VARCHAR" property="cashFeeType"/>
-        <result column="cash_refund_fee" jdbcType="INTEGER" property="cashRefundFee"/>
         <result column="settlement_total_fee" jdbcType="INTEGER" property="settlementTotalFee"/>
         <result column="coupon_fee" jdbcType="INTEGER" property="couponFee"/>
         <result column="goods_tag" jdbcType="VARCHAR" property="goodsTag"/>
         <result column="openid" jdbcType="VARCHAR" property="openid"/>
         <result column="is_subscribe" jdbcType="VARCHAR" property="isSubscribe"/>
-        <result column="sync_time" jdbcType="TIMESTAMP" property="syncTime"/>
     </resultMap>
 
     <sql id="Column_List">
@@ -40,10 +36,9 @@
     out_trade_no, prepay_id, transaction_id, body,
     trade_type, limit_pay, product_id, code_url,
     trade_state, time_start, time_end, time_expire,
-    bank_type, total_fee, fee_type, refund_fee,
-    refund_fee_type, cash_fee, cash_fee_type, cash_refund_fee,
-    settlement_total_fee, coupon_fee, goods_tag, openid,
-    is_subscribe, sync_time
+    bank_type, total_fee, fee_type, cash_fee,
+    cash_fee_type, settlement_total_fee, coupon_fee, goods_tag,
+    openid, is_subscribe
     </sql>
     <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
@@ -106,20 +101,11 @@
             <if test="feeType != null">
                 fee_type,
             </if>
-            <if test="refundFee != null">
-                refund_fee,
-            </if>
-            <if test="refundFeeType != null">
-                refund_fee_type,
-            </if>
             <if test="cashFee != null">
                 cash_fee,
             </if>
             <if test="cashFeeType != null">
                 cash_fee_type,
-            </if>
-            <if test="cashRefundFee != null">
-                cash_refund_fee,
             </if>
             <if test="settlementTotalFee != null">
                 settlement_total_fee,
@@ -136,10 +122,7 @@
             <if test="isSubscribe != null">
                 is_subscribe,
             </if>
-            <if test="syncTime != null">
-                sync_time,
-            </if>
-        </trim>
+       </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             #{orderId,jdbcType=VARCHAR},
             <if test="spbillCreateIp != null">
@@ -193,20 +176,11 @@
             <if test="feeType != null">
                 #{feeType,jdbcType=VARCHAR},
             </if>
-            <if test="refundFee != null">
-                #{refundFee,jdbcType=INTEGER},
-            </if>
-            <if test="refundFeeType != null">
-                #{refundFeeType,jdbcType=VARCHAR},
-            </if>
             <if test="cashFee != null">
                 #{cashFee,jdbcType=INTEGER},
             </if>
             <if test="cashFeeType != null">
                 #{cashFeeType,jdbcType=VARCHAR},
-            </if>
-            <if test="cashRefundFee != null">
-                #{cashRefundFee,jdbcType=INTEGER},
             </if>
             <if test="settlementTotalFee != null">
                 #{settlementTotalFee,jdbcType=INTEGER},
@@ -222,9 +196,6 @@
             </if>
             <if test="isSubscribe != null">
                 #{isSubscribe,jdbcType=VARCHAR},
-            </if>
-            <if test="syncTime != null">
-                #{syncTime,jdbcType=TIMESTAMP},
             </if>
         </trim>
     </insert>
@@ -282,20 +253,11 @@
             <if test="feeType != null">
                 fee_type = #{feeType,jdbcType=VARCHAR},
             </if>
-            <if test="refundFee != null">
-                refund_fee = #{refundFee,jdbcType=INTEGER},
-            </if>
-            <if test="refundFeeType != null">
-                refund_fee_type = #{refundFeeType,jdbcType=VARCHAR},
-            </if>
             <if test="cashFee != null">
                 cash_fee = #{cashFee,jdbcType=INTEGER},
             </if>
             <if test="cashFeeType != null">
                 cash_fee_type = #{cashFeeType,jdbcType=VARCHAR},
-            </if>
-            <if test="cashRefundFee != null">
-                cash_refund_fee = #{cashRefundFee,jdbcType=INTEGER},
             </if>
             <if test="settlementTotalFee != null">
                 settlement_total_fee = #{settlementTotalFee,jdbcType=INTEGER},
@@ -312,10 +274,7 @@
             <if test="isSubscribe != null">
                 is_subscribe = #{isSubscribe,jdbcType=VARCHAR},
             </if>
-            <if test="syncTime != null">
-                sync_time = #{syncTime,jdbcType=TIMESTAMP},
-            </if>
-        </set>
+       </set>
         where order_id = #{orderId,jdbcType=VARCHAR}
     </update>
     <select id="exists" resultType="java.lang.Boolean" parameterType="string">

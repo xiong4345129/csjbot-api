@@ -22,11 +22,11 @@ public class WxPayDataBuilder implements WxPayDataService {
     private final String callbackUrl;
     private final String apiKey, appId, mchId;
     private final Integer expireMin;
-    private final OrderPayDBService dbService;
+    private final WxPayDBService dbService;
 
     @Autowired
     public WxPayDataBuilder(WxPayConfig config,
-                            @Qualifier("wxPayDBService") OrderPayDBService dbService) {
+                            @Qualifier("wxPayDBService") WxPayDBService dbService) {
         System.out.println("init WxPayDataBuilder");
         this.callbackUrl = config.getValueStrict(WxPayConfig.K_NOTIFY_URL);
         this.hostIp = config.getServerIP();
@@ -37,6 +37,8 @@ public class WxPayDataBuilder implements WxPayDataService {
         this.apiKey = accMap.get(K_API_KEY);
         this.appId = accMap.get(K_APPID);
         this.mchId = accMap.get(K_MCH_ID);
+        if (apiKey == null || appId == null || mchId == null)
+            throw new NullPointerException("wx secrets");
     }
 
     @Override
@@ -64,8 +66,8 @@ public class WxPayDataBuilder implements WxPayDataService {
 
 
     private WxPayDataWrapper computeSignAndWrapData(Map<String, String> params) {
-        // remove null entries
-        params.values().removeIf(Objects::isNull);
+        // remove empty entries
+        params.values().removeIf(s -> s == null || s.trim().length() == 0);
         // compute sign
         final String sign = computeSign(params);
         params.put(K_SIGN, sign);
@@ -77,22 +79,54 @@ public class WxPayDataBuilder implements WxPayDataService {
     }
 
     @Override
-    public WxPayDataWrapper buildQueryData(AbstractMap.SimpleEntry<String, String> idPair) {
-        ensureNotNull(idPair);
-        String idKey = idPair.getKey();
-        String idVal = idPair.getValue();
-        if (idVal == null || !(K_TRANSACTION_ID.equals(idKey) || K_OUT_TRADE_NO.equals(idKey)))
-            return new WxPayDataWrapper(true);
+    public WxPayDataWrapper buildQueryData(String orderId) {
+        ensureNotNull(orderId);
         Map<String, String> params = createInitialParams();
-        params.put(idKey, idVal);
+        PmsPayDetailWx wxDetail = dbService.getWxPayRecord(orderId);
+        ensureNotNull(wxDetail);
+        String tranId = wxDetail.getTransactionId();
+        if (tranId != null) {
+            params.put(K_TRANSACTION_ID, tranId);
+        } else {
+            params.put(K_OUT_TRADE_NO, orderId);
+        }
         return computeSignAndWrapData(params);
     }
 
     @Override
-    public WxPayDataWrapper buildCloseData(WxClientRequest clientReq) {
-        ensureNotNull(clientReq);
+    public WxPayDataWrapper buildRefundData(String orderId, Integer refundFee) {
+        ensureNotNull(orderId);
+        PmsPayDetailWx wxDetail = dbService.getWxPayRecord(orderId);
+        ensureNotNull(wxDetail);
+
+        final String refundNo = WxPayUtil.newRefundNo();
+
+        Map<String, String> params = createInitialParams();
+        params.put(K_TRANSACTION_ID, wxDetail.getTransactionId());
+        // whether refund fee is valid should be checked before calling this builder!
+        params.put(K_TOTAL_FEE, String.valueOf(wxDetail.getTotalFee()));
+        params.put(K_REFUND_FEE, String.valueOf(refundFee));
+        params.put(K_OP_USER_ID, mchId);
+        params.put(K_OUT_REFUND_NO, refundNo);
+        WxPayDataWrapper wrapper = computeSignAndWrapData(params);
+        wrapper.setRefund(new PmsRefund(orderId, refundNo, refundFee, RefundStatus.PRE));
+        // wrapper.setWxRefund(new PmsRefundDetailWx(refundNo));
+        return wrapper;
+    }
+
+    @Override
+    public WxPayDataWrapper buildRefundQueryData(String refundNo) {
+        ensureNotNull(refundNo);
+        Map<String, String> params = createInitialParams();
+        params.put(K_OUT_REFUND_NO, refundNo);
+        return computeSignAndWrapData(params);
+    }
+
+    @Override
+    public WxPayDataWrapper buildCloseData(String orderId) {
+        ensureNotNull(orderId);
         Map<String, String> map = createInitialParams();
-        map.put(K_OUT_TRADE_NO, clientReq.getOrderId());
+        map.put(K_OUT_TRADE_NO, orderId);
         return computeSignAndWrapData(map);
     }
 

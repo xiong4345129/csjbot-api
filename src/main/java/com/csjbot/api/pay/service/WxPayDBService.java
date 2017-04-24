@@ -1,10 +1,7 @@
 package com.csjbot.api.pay.service;
 
-import com.csjbot.api.pay.model.OrderPayOp;
 import com.csjbot.api.pay.model.PmsPayDetailWx;
-import com.csjbot.api.pay.model.WxPayDataWrapper;
-
-import java.net.URI;
+import com.csjbot.api.pay.model.PmsRefundDetailWx;
 
 public interface WxPayDBService extends OrderPayDBService {
     int newWxPayRecord(PmsPayDetailWx record);
@@ -15,5 +12,11 @@ public interface WxPayDBService extends OrderPayDBService {
 
     boolean wxPayRecordExists(String orderId);
 
-    // boolean newWxPayOrder(WxPayDataWrapper dataWrapper);
+    int newWxRefundRecord(PmsRefundDetailWx record);
+
+    // int updateWxRefundRecord(PmsRefundDetailWx record);
+
+    // PmsRefundDetailWx getWxRefundRecord(String refundNo);
+
+
 }

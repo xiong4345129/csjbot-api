@@ -5,7 +5,7 @@
     <insert id="insert" parameterType="com.csjbot.api.pay.model.PmsOrderPayHttpLog">
         insert into pms_order_pay_http_log
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            order_id,
+            id,
             is_request,
             <if test="operation != null">
                 operation,
@@ -16,7 +16,7 @@
             body,
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            #{orderId,jdbcType=VARCHAR},
+            #{id,jdbcType=VARCHAR},
             #{isRequest,jdbcType=BOOLEAN},
             <if test="operation != null">
                 #{operation,jdbcType=VARCHAR},

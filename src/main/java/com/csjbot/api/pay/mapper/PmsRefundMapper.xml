@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.pay.dao.PmsRefundMapper">
+    <resultMap id="BaseResultMap" type="com.csjbot.api.pay.model.PmsRefund">
+        <id column="refund_no" jdbcType="VARCHAR" property="refundNo"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="order_id" jdbcType="VARCHAR" property="orderId"/>
+        <result column="refund_fee" jdbcType="INTEGER" property="refundFee"/>
+        <result column="refund_status" jdbcType="VARCHAR" property="refundStatus"/>
+        <result column="refund_err_code" jdbcType="VARCHAR" property="refundErrCode"/>
+        <result column="refund_err_desc" jdbcType="VARCHAR" property="refundErrDesc"/>
+        <result column="is_closed" jdbcType="BIT" property="isClosed"/>
+        <result column="close_time" jdbcType="TIMESTAMP" property="closeTime"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    refund_no, create_time, update_time, order_id, refund_fee, refund_status, refund_err_code, 
+    refund_err_desc, is_closed, close_time, remark
+    </sql>
+
+    <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from pms_refund
+        where refund_no = #{refundNo,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insert" parameterType="com.csjbot.api.pay.model.PmsRefund">
+        insert into pms_refund
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            refund_no,
+            order_id,
+            refund_fee,
+            refund_status,
+            <if test="refundErrCode != null">
+                refund_err_code,
+            </if>
+            <if test="refundErrDesc != null">
+                refund_err_desc,
+            </if>
+            <if test="isClosed != null">
+                is_closed,
+            </if>
+            <if test="closeTime != null">
+                close_time,
+            </if>
+            <if test="remark != null">
+                remark,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{refundNo,jdbcType=VARCHAR},
+            #{orderId,jdbcType=VARCHAR},
+            #{refundFee,jdbcType=INTEGER},
+            #{refundStatus,jdbcType=VARCHAR},
+            <if test="refundErrCode != null">
+                #{refundErrCode,jdbcType=VARCHAR},
+            </if>
+            <if test="refundErrDesc != null">
+                #{refundErrDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="isClosed != null">
+                #{isClosed,jdbcType=BIT},
+            </if>
+            <if test="closeTime != null">
+                #{closeTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.csjbot.api.pay.model.PmsRefund">
+        update pms_refund
+        <set>
+            <if test="refundStatus != null">
+                refund_status = #{refundStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="refundErrCode != null">
+                refund_err_code = #{refundErrCode,jdbcType=VARCHAR},
+            </if>
+            <if test="refundErrDesc != null">
+                refund_err_desc = #{refundErrDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="isClosed != null">
+                is_closed = #{isClosed,jdbcType=BIT},
+            </if>
+            <if test="closeTime != null">
+                close_time = #{closeTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null">
+                remark = #{remark,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where refund_no = #{refundNo,jdbcType=VARCHAR}
+    </update>
+
+    <select id="count" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(1) cnt from pms_refund where order_id = #{orderId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="sum" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select IFNULL(sum(refund_fee), 0) refunded from pms_refund where order_id = #{orderId,jdbcType=VARCHAR} AND refund_status='SUCCESS'
+    </select>
+
+</mapper>
