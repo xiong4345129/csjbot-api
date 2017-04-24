@@ -3,7 +3,6 @@
  */
 package com.csjbot.api.robot.service;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,10 +10,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.csjbot.api.common.util.FileZipUtil;
+import com.csjbot.api.common.util.JsonUtil;
+import com.csjbot.api.common.util.RandomUtil;
+import com.csjbot.api.face.service.RestTest;
 import com.csjbot.api.robot.dao.Sms_adminDAO;
 import com.csjbot.api.robot.dao.Sms_auth_codeDAO;
 import com.csjbot.api.robot.dao.Sms_groupDAO;
@@ -38,10 +43,6 @@ import com.csjbot.api.robot.model.Sys_data;
 import com.csjbot.api.robot.model.Sys_data_dictionary;
 import com.csjbot.api.robot.model.Sys_version_robot;
 import com.csjbot.api.robot.util.CharacterUtil;
-import com.csjbot.api.common.util.FileZipUtil;
-import com.csjbot.api.common.util.JsonUtil;
-import com.csjbot.api.common.util.RandomUtil;
-import com.csjbot.api.face.service.RestTest;
 
 /**
  * @author 作者：Zhangyangyang
@@ -1011,9 +1012,11 @@ public class SnowRobotServiceDAOImpl implements SnowRobotServiceDAO {
 	}
 
 	//机器人升级版本数据
-	public JSONObject returnRobotVersion(String category, String channel) {
+	public JSONObject returnRobotVersion(HttpServletRequest request) {
 		JsonUtil jsonUtil = getJsonUtilEntity(true);
 		boolean upgrade = false;
+		String category =  request.getParameter("category");
+		String channel = request.getParameter("channel");
 		Map<String, Object> result = new HashMap<>();
 		Map<String, Object> content = new HashMap<>();
 		Sys_data sys_data1 = sys_dataDAO.findCodeById(FileZipUtil.CategoryCode);
@@ -1041,7 +1044,7 @@ public class SnowRobotServiceDAOImpl implements SnowRobotServiceDAO {
 			   content.put("version_name", params3.getVersion_name());
 			   content.put("checksum", params3.getMd5());
 			   List<Sys_attachment> saList = sys_attachmentDAO.getSystByProId(params3.getId().toString());
-			   content.put("url",FileZipUtil.PATH+":8080/api/sys/downFile?filePath="+saList.get(0).getLocation().toString()+"&fileName="+saList.get(0).getAlias_name().toString());
+			   content.put("url",request.getServerName()+":"+request.getServerPort()+"/api/scs/downFile?filePath="+saList.get(0).getLocation().toString()+"&fileName="+saList.get(0).getAlias_name().toString());
 			}else{
 				jsonUtil = getJsonUtilEntity(false);
 				jsonUtil.setMessage("版本不可升级!");

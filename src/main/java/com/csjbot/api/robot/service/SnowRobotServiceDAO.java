@@ -3,6 +3,8 @@
  */
 package com.csjbot.api.robot.service;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.alibaba.fastjson.JSONObject;
 /**
  * @author 作者：Zhangyangyang
@@ -95,7 +97,7 @@ public interface SnowRobotServiceDAO {
 	public abstract JSONObject adminJudgeBindRobot(String type, String id);
 	
 	//机器人升级版本数据
-	public abstract JSONObject returnRobotVersion(String category,String channel);
+	public abstract JSONObject returnRobotVersion(HttpServletRequest request);
 
 	
 }

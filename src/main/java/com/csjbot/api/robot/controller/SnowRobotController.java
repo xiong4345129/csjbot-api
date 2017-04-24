@@ -244,6 +244,6 @@ public class SnowRobotController {
 	@ResponseBody
 	public void versionRobot(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
-		ResponseUtil.write(response, snowRobotServiceDAO.returnRobotVersion(request.getParameter("category"),request.getParameter("channel")));
+		ResponseUtil.write(response, snowRobotServiceDAO.returnRobotVersion(request));
 	}
 }
