@@ -1012,51 +1012,56 @@ public class SnowRobotServiceDAOImpl implements SnowRobotServiceDAO {
 	}
 
 	//机器人升级版本数据
-	public JSONObject returnRobotVersion(HttpServletRequest request) {
-		JsonUtil jsonUtil = getJsonUtilEntity(true);
-		boolean upgrade = false;
-		String category =  request.getParameter("category");
-		String channel = request.getParameter("channel");
-		Map<String, Object> result = new HashMap<>();
-		Map<String, Object> content = new HashMap<>();
-		Sys_data sys_data1 = sys_dataDAO.findCodeById(FileZipUtil.CategoryCode);
-		Sys_data sys_data2 = sys_dataDAO.findCodeById(FileZipUtil.ChannelCode);
- 		Sys_data_dictionary params1= sys_data_dictionaryDAO.findDataDictionaryById(sys_data1.getId(),category);
-		Sys_data_dictionary params2= sys_data_dictionaryDAO.findDataDictionaryById(sys_data2.getId(),channel);
-		
-		if(params1 != null ){
-			if(params1.getRule() != 0){
-			   upgrade = true;
-			   Sys_version_robot params3 = new Sys_version_robot();
-			   List<Sys_version_robot> list = sys_version_robotDAO.findSysVersionBycach(params1.getId(),params2.getId());
-			   for(Sys_version_robot svr : list){
-				   if(svr.getVersion_code() != 0){
-					   //判断版本号中最大的那个
-						   params3 = sys_version_robotDAO.findSysByVersionCode(params1.getId(),params2.getId());
+		public JSONObject returnRobotVersion(HttpServletRequest request) {
+			JsonUtil jsonUtil = getJsonUtilEntity(true);
+			boolean upgrade = false;
+			String category =  request.getParameter("category");
+			String channel = request.getParameter("channel");
+			Map<String, Object> result = new HashMap<>();
+			Map<String, Object> content = new HashMap<>();
+			Sys_data sys_data1 = sys_dataDAO.findCodeById(FileZipUtil.CategoryCode);
+			Sys_data sys_data2 = sys_dataDAO.findCodeById(FileZipUtil.ChannelCode);
+	 		Sys_data_dictionary params1= sys_data_dictionaryDAO.findDataDictionaryById(sys_data1.getId(),category);
+			Sys_data_dictionary params2= sys_data_dictionaryDAO.findDataDictionaryById(sys_data2.getId(),channel);
+			if(params1 != null ){
+				if(params1.getRule() != 0){
+				   upgrade = true;
+				   Sys_version_robot params3 = new Sys_version_robot();
+				   List<Sys_version_robot> list = sys_version_robotDAO.findSysVersionBycach(params1.getId(),params2.getId());
+				   if( list.size() != 0){
+					   for(Sys_version_robot svr : list){
+						   if(svr.getVersion_code() != 0){
+							   //判断版本号中最大的那个
+								   params3 = sys_version_robotDAO.findSysByVersionCode(params1.getId(),params2.getId());
+						   }else{
+							   //判断更新日期最早的那个
+							      params3 = sys_version_robotDAO.findSysByDateUpdate(params1.getId(),params2.getId());
+						   }
+					   }
+					   content.put("category", category);
+					   content.put("channel", channel);
+					   content.put("version_code", params3.getVersion_code());
+					   content.put("version_name", params3.getVersion_name());
+					   content.put("checksum", params3.getMd5());
+					   List<Sys_attachment> saList = sys_attachmentDAO.getSystByProId(params3.getId().toString());
+					   content.put("url",request.getServerName()+":"+request.getServerPort()+"/api/scs/downFile?filePath="+saList.get(0).getLocation().toString()+"&fileName="+saList.get(0).getAlias_name().toString());
+					   
 				   }else{
-					   //判断更新日期最早的那个
-					      params3 = sys_version_robotDAO.findSysByDateUpdate(params1.getId(),params2.getId());
+					   jsonUtil = getJsonUtilEntity(false);
+					   jsonUtil.setMessage("升级版本为空!");
 				   }
-			   }
-			   content.put("category", category);
-			   content.put("channel", channel);
-			   content.put("version_code", params3.getVersion_code());
-			   content.put("version_name", params3.getVersion_name());
-			   content.put("checksum", params3.getMd5());
-			   List<Sys_attachment> saList = sys_attachmentDAO.getSystByProId(params3.getId().toString());
-			   content.put("url",request.getServerName()+":"+request.getServerPort()+"/api/scs/downFile?filePath="+saList.get(0).getLocation().toString()+"&fileName="+saList.get(0).getAlias_name().toString());
-			}else{
+				}else{
+					jsonUtil = getJsonUtilEntity(false);
+					jsonUtil.setMessage("版本不可升级!");
+				}
+				content.put("upgrade", upgrade);
+				result.put("resule", content);
+				jsonUtil.setResult(result);
+			} else {
 				jsonUtil = getJsonUtilEntity(false);
-				jsonUtil.setMessage("版本不可升级!");
+				jsonUtil.setMessage("Error from json format!");
 			}
-			content.put("upgrade", upgrade);
-			result.put("resule", content);
-			jsonUtil.setResult(result);
-		} else {
-			jsonUtil = getJsonUtilEntity(false);
-			jsonUtil.setMessage("Error from json format!");
+			
+			return JsonUtil.toJson(jsonUtil);
 		}
-		
-		return JsonUtil.toJson(jsonUtil);
-	}
 }
