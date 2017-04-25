@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.product.dao.Pms_order_payDAO">
+	<select id="findPayByOrderId" resultType="com.csjbot.api.product.model.Pms_order_pay">
+		select * from pms_order_pay where order_id=#{order_id}
+	</select>
+</mapper>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.pay.dao.PmsOrderPayCustomMapper">
+
+    <select id="getAccount" resultType="hashmap">
+        select code, value from cms_secret where code_group='weixin';
+    </select>
+
+    <select id="getUnitPrice" resultType="java.lang.Integer" parameterType="string">
+        select round(price*100) up from pms_product where id=#{itemId};
+    </select>
+
+</mapper>

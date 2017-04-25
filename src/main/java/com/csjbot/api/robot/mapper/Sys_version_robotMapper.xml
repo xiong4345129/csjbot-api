@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.robot.dao.Sys_version_robotDAO">
+    <select id="findSysVersionBycach" resultType="com.csjbot.api.robot.model.Sys_version_robot">
+            select * from sys_version_robot where category=#{category} and channel=#{channel}
+    </select>
+    <select id="findSysByVersionCode" resultType="com.csjbot.api.robot.model.Sys_version_robot">
+            select * from sys_version_robot where category=#{category} and channel=#{channel} order by version_code desc LIMIT 1;
+    </select>
+    <select id="findSysByDateUpdate" resultType="com.csjbot.api.robot.model.Sys_version_robot">
+            select * from sys_version_robot where category=#{category} and channel=#{channel} order by date_create desc LIMIT 1;
+    </select>
+ 
+</mapper>

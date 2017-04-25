@@ -4,9 +4,9 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Insert title here</title>
+<title>CSJBOT API</title>
 </head>
 <body>
-<h1>hello</h1>
+<h1>Welcome to CSJBOT API</h1>
 </body>
 </html>

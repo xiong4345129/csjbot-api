@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.pay.dao.PmsOrderPayHttpLogMapper">
+
+    <insert id="insert" parameterType="com.csjbot.api.pay.model.PmsOrderPayHttpLog">
+        insert into pms_order_pay_http_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            is_request,
+            <if test="operation != null">
+                operation,
+            </if>
+            <if test="path != null">
+                path,
+            </if>
+            body,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id,jdbcType=VARCHAR},
+            #{isRequest,jdbcType=BOOLEAN},
+            <if test="operation != null">
+                #{operation,jdbcType=VARCHAR},
+            </if>
+            <if test="path != null">
+                #{path,jdbcType=VARCHAR},
+            </if>
+            #{body,jdbcType=LONGVARCHAR},
+        </trim>
+    </insert>
+</mapper>

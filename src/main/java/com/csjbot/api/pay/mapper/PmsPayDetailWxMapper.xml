@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csjbot.api.pay.dao.PmsPayDetailWxMapper">
+    <resultMap id="BaseResultMap" type="com.csjbot.api.pay.model.PmsPayDetailWx">
+        <id column="order_id" jdbcType="VARCHAR" property="orderId"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="spbill_create_ip" jdbcType="VARCHAR" property="spbillCreateIp"/>
+        <result column="out_trade_no" jdbcType="VARCHAR" property="outTradeNo"/>
+        <result column="prepay_id" jdbcType="VARCHAR" property="prepayId"/>
+        <result column="transaction_id" jdbcType="VARCHAR" property="transactionId"/>
+        <result column="body" jdbcType="VARCHAR" property="body"/>
+        <result column="trade_type" jdbcType="VARCHAR" property="tradeType"/>
+        <result column="limit_pay" jdbcType="VARCHAR" property="limitPay"/>
+        <result column="product_id" jdbcType="VARCHAR" property="productId"/>
+        <result column="code_url" jdbcType="VARCHAR" property="codeUrl"/>
+        <result column="trade_state" jdbcType="VARCHAR" property="tradeState"/>
+        <result column="trade_state_desc" jdbcType="VARCHAR" property="tradeStateDesc"/>
+        <result column="time_start" jdbcType="TIMESTAMP" property="timeStart"/>
+        <result column="time_end" jdbcType="TIMESTAMP" property="timeEnd"/>
+        <result column="time_expire" jdbcType="TIMESTAMP" property="timeExpire"/>
+        <result column="bank_type" jdbcType="VARCHAR" property="bankType"/>
+        <result column="total_fee" jdbcType="INTEGER" property="totalFee"/>
+        <result column="fee_type" jdbcType="VARCHAR" property="feeType"/>
+        <result column="cash_fee" jdbcType="INTEGER" property="cashFee"/>
+        <result column="cash_fee_type" jdbcType="VARCHAR" property="cashFeeType"/>
+        <result column="settlement_total_fee" jdbcType="INTEGER" property="settlementTotalFee"/>
+        <result column="coupon_fee" jdbcType="INTEGER" property="couponFee"/>
+        <result column="goods_tag" jdbcType="VARCHAR" property="goodsTag"/>
+        <result column="openid" jdbcType="VARCHAR" property="openid"/>
+        <result column="is_subscribe" jdbcType="VARCHAR" property="isSubscribe"/>
+    </resultMap>
+
+    <sql id="Column_List">
+    order_id, create_time, update_time, spbill_create_ip,
+    out_trade_no, prepay_id, transaction_id, body,
+    trade_type, limit_pay, product_id, code_url,
+    trade_state, time_start, time_end, time_expire,
+    bank_type, total_fee, fee_type, cash_fee,
+    cash_fee_type, settlement_total_fee, coupon_fee, goods_tag,
+    openid, is_subscribe
+    </sql>
+    <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Column_List"/>
+        from pms_pay_detail_wx
+        where order_id = #{orderId,jdbcType=VARCHAR}
+    </select>
+    <insert id="insert" parameterType="com.csjbot.api.pay.model.PmsPayDetailWx">
+        insert into pms_pay_detail_wx
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            order_id,
+            <if test="spbillCreateIp != null">
+                spbill_create_ip,
+            </if>
+            <if test="outTradeNo != null">
+                out_trade_no,
+            </if>
+            <if test="prepayId != null">
+                prepay_id,
+            </if>
+            <if test="transactionId != null">
+                transaction_id,
+            </if>
+            <if test="body!= null">
+                body,
+            </if>
+            <if test="tradeType != null">
+                trade_type,
+            </if>
+            <if test="limitPay != null">
+                limit_pay,
+            </if>
+            <if test="productId != null">
+                product_id,
+            </if>
+            <if test="codeUrl != null">
+                code_url,
+            </if>
+            <if test="tradeState != null">
+                trade_state,
+            </if>
+            <if test="tradeStateDesc != null">
+                trade_state_desc,
+            </if>
+            <if test="timeStart != null">
+                time_start,
+            </if>
+            <if test="timeEnd != null">
+                time_end,
+            </if>
+            <if test="timeExpire != null">
+                time_expire,
+            </if>
+            <if test="bankType != null">
+                bank_type,
+            </if>
+            <if test="totalFee != null">
+                total_fee,
+            </if>
+            <if test="feeType != null">
+                fee_type,
+            </if>
+            <if test="cashFee != null">
+                cash_fee,
+            </if>
+            <if test="cashFeeType != null">
+                cash_fee_type,
+            </if>
+            <if test="settlementTotalFee != null">
+                settlement_total_fee,
+            </if>
+            <if test="couponFee != null">
+                coupon_fee,
+            </if>
+            <if test="goodsTag != null">
+                goods_tag,
+            </if>
+            <if test="openid != null">
+                openid,
+            </if>
+            <if test="isSubscribe != null">
+                is_subscribe,
+            </if>
+       </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{orderId,jdbcType=VARCHAR},
+            <if test="spbillCreateIp != null">
+                #{spbillCreateIp,jdbcType=VARCHAR},
+            </if>
+            <if test="outTradeNo != null">
+                #{outTradeNo,jdbcType=VARCHAR},
+            </if>
+            <if test="prepayId != null">
+                #{prepayId,jdbcType=VARCHAR},
+            </if>
+            <if test="transactionId != null">
+                #{transactionId,jdbcType=VARCHAR},
+            </if>
+            <if test="body!= null">
+                #{body,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeType != null">
+                #{tradeType,jdbcType=VARCHAR},
+            </if>
+            <if test="limitPay != null">
+                #{limitPay,jdbcType=VARCHAR},
+            </if>
+            <if test="productId != null">
+                #{productId,jdbcType=VARCHAR},
+            </if>
+            <if test="codeUrl != null">
+                #{codeUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeState != null">
+                #{tradeState,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeStateDesc != null">
+                #{tradeStateDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="timeStart != null">
+                #{timeStart,jdbcType=TIMESTAMP},
+            </if>
+            <if test="timeEnd != null">
+                #{timeEnd,jdbcType=TIMESTAMP},
+            </if>
+            <if test="timeExpire != null">
+                #{timeExpire,jdbcType=TIMESTAMP},
+            </if>
+            <if test="bankType != null">
+                #{bankType,jdbcType=VARCHAR},
+            </if>
+            <if test="totalFee != null">
+                #{totalFee,jdbcType=INTEGER},
+            </if>
+            <if test="feeType != null">
+                #{feeType,jdbcType=VARCHAR},
+            </if>
+            <if test="cashFee != null">
+                #{cashFee,jdbcType=INTEGER},
+            </if>
+            <if test="cashFeeType != null">
+                #{cashFeeType,jdbcType=VARCHAR},
+            </if>
+            <if test="settlementTotalFee != null">
+                #{settlementTotalFee,jdbcType=INTEGER},
+            </if>
+            <if test="couponFee != null">
+                #{couponFee,jdbcType=INTEGER},
+            </if>
+            <if test="goodsTag != null">
+                #{goodsTag,jdbcType=VARCHAR},
+            </if>
+            <if test="openid != null">
+                #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="isSubscribe != null">
+                #{isSubscribe,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="update" parameterType="com.csjbot.api.pay.model.PmsPayDetailWx">
+        update pms_pay_detail_wx
+        <set>
+            <if test="spbillCreateIp != null">
+                spbill_create_ip = #{spbillCreateIp,jdbcType=VARCHAR},
+            </if>
+            <if test="outTradeNo != null">
+                out_trade_no = #{outTradeNo,jdbcType=VARCHAR},
+            </if>
+            <if test="prepayId != null">
+                prepay_id = #{prepayId,jdbcType=VARCHAR},
+            </if>
+            <if test="transactionId != null">
+                transaction_id = #{transactionId,jdbcType=VARCHAR},
+            </if>
+            <if test="body != null">
+                body = #{body,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeType != null">
+                trade_type = #{tradeType,jdbcType=VARCHAR},
+            </if>
+            <if test="limitPay != null">
+                limit_pay = #{limitPay,jdbcType=VARCHAR},
+            </if>
+            <if test="productId != null">
+                product_id = #{productId,jdbcType=VARCHAR},
+            </if>
+            <if test="codeUrl != null">
+                code_url = #{codeUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeState != null">
+                trade_state = #{tradeState,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeStateDesc != null">
+                trade_state_desc = #{tradeStateDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="timeStart != null">
+                time_start = #{timeStart,jdbcType=TIMESTAMP},
+            </if>
+            <if test="timeEnd != null">
+                time_end = #{timeEnd,jdbcType=TIMESTAMP},
+            </if>
+            <if test="timeExpire != null">
+                time_expire = #{timeExpire,jdbcType=TIMESTAMP},
+            </if>
+            <if test="bankType != null">
+                bank_type = #{bankType,jdbcType=VARCHAR},
+            </if>
+            <if test="totalFee != null">
+                total_fee = #{totalFee,jdbcType=INTEGER},
+            </if>
+            <if test="feeType != null">
+                fee_type = #{feeType,jdbcType=VARCHAR},
+            </if>
+            <if test="cashFee != null">
+                cash_fee = #{cashFee,jdbcType=INTEGER},
+            </if>
+            <if test="cashFeeType != null">
+                cash_fee_type = #{cashFeeType,jdbcType=VARCHAR},
+            </if>
+            <if test="settlementTotalFee != null">
+                settlement_total_fee = #{settlementTotalFee,jdbcType=INTEGER},
+            </if>
+            <if test="couponFee != null">
+                coupon_fee = #{couponFee,jdbcType=INTEGER},
+            </if>
+            <if test="goodsTag != null">
+                goods_tag = #{goodsTag,jdbcType=VARCHAR},
+            </if>
+            <if test="openid != null">
+                openid = #{openid,jdbcType=VARCHAR},
+            </if>
+            <if test="isSubscribe != null">
+                is_subscribe = #{isSubscribe,jdbcType=VARCHAR},
+            </if>
+       </set>
+        where order_id = #{orderId,jdbcType=VARCHAR}
+    </update>
+    <select id="exists" resultType="java.lang.Boolean" parameterType="string">
+        SELECT EXISTS(SELECT 1 FROM pms_pay_detail_wx WHERE order_id= #{orderId} );
+    </select>
+</mapper>
